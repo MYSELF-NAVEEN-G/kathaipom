@@ -4,6 +4,7 @@ import { getPosts, getUsers } from "@/lib/data";
 import {
   prioritizeFeed,
   type PrioritizeFeedInput,
+  type PrioritizeFeedOutput,
 } from "@/ai/flows/intelligent-feed-prioritization";
 import type { EnrichedPost } from "@/lib/types";
 import { Suspense } from "react";
@@ -43,7 +44,7 @@ export default async function Home() {
         interactionType: "comment",
         timestamp: new Date(Date.now() - 86400000 * 5).toISOString(),
       },
-       {
+      {
         postId: "post-8",
         interactionType: "follow",
         timestamp: new Date(Date.now() - 86400000 * 1).toISOString(),
@@ -51,7 +52,13 @@ export default async function Home() {
     ],
   };
 
-  const prioritizedFeed = await prioritizeFeed(aiInput);
+  let prioritizedFeed: PrioritizeFeedOutput = [];
+  try {
+    prioritizedFeed = await prioritizeFeed(aiInput);
+  } catch (error) {
+    console.warn("AI feed prioritization failed. Falling back to chronological order.", error);
+  }
+
 
   const priorityMap = new Map(
     prioritizedFeed.map((p) => [p.postId, { score: p.priorityScore, reason: p.reason }])
@@ -61,7 +68,7 @@ export default async function Home() {
     .map((post) => {
       const author = userMap.get(post.authorId);
       const priority = priorityMap.get(post.id);
-      if (!author) return null; // Should not happen with mock data
+      if (!author) return null;
 
       return {
         ...post,
@@ -71,7 +78,12 @@ export default async function Home() {
       };
     })
     .filter((p): p is EnrichedPost => p !== null)
-    .sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
+    .sort((a, b) => {
+        if (prioritizedFeed.length > 0) {
+            return (b.priorityScore || 0) - (a.priorityScore || 0);
+        }
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
 
   return (
     <main>
