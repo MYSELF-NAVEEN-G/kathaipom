@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { User } from '@/lib/types';
 import { http } from 'msw';
 import { setupWorker } from 'msw/browser';
@@ -47,35 +47,37 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      // Ensure the worker is running before we try to fetch.
-      await startWorker();
-      
-      const userId = localStorage.getItem('userId');
-      if (userId) {
-        try {
-          // Fetch from the mock API route now, not the static file
-          const res = await fetch('/api/users');
-          if (!res.ok) throw new Error('Failed to fetch');
-          const allUsers: User[] = await res.json();
-          const currentUser = allUsers.find((u: User) => u.id === userId);
-          setUser(currentUser || null);
-        } catch (error) {
-          console.error("Failed to fetch user:", error);
-          setUser(null);
-        }
-      } else {
+  const initializeAuth = useCallback(async () => {
+    // Ensure the worker is running before we try to fetch.
+    await startWorker();
+    
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      try {
+        // Fetch from the mock API route now, not the static file
+        const res = await fetch('/api/users');
+        if (!res.ok) throw new Error('Failed to fetch');
+        const allUsers: User[] = await res.json();
+        const currentUser = allUsers.find((u: User) => u.id === userId);
+        setUser(currentUser || null);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
         setUser(null);
       }
-      setIsLoading(false);
-    };
-    
+    } else {
+      setUser(null);
+    }
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
     initializeAuth();
 
     // Listen for changes in localStorage from other tabs/windows
-    const handleStorageChange = () => {
-        initializeAuth();
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'userId') {
+            initializeAuth();
+        }
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -84,7 +86,7 @@ export function useAuth() {
         window.removeEventListener('storage', handleStorageChange);
     };
 
-  }, []);
+  }, [initializeAuth]);
 
   return { user, isLoading };
 }
