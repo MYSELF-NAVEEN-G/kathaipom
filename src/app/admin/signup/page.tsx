@@ -79,7 +79,7 @@ export default function WriterSignupPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required />
             </div>
-            <Button type="submit" className="w-full" onClick={handleSignUp}>
+            <Button type="button" className="w-full" onClick={handleSignUp}>
               Sign Up
             </Button>
           </div>
