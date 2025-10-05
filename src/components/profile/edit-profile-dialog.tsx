@@ -79,7 +79,7 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
   const onSubmit = (data: ProfileFormValues) => {
     startTransition(async () => {
       try {
-        const updateData: Parameters<typeof updateUser>[1] = { ...data };
+        const updateData: Parameters<typeof updateUser>[0] = { ...data };
         if (avatarPreview) {
             updateData.avatar = { ...user.avatar, imageUrl: avatarPreview };
         }
@@ -87,7 +87,7 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
             updateData.coverImage = { ...user.coverImage, imageUrl: coverPreview };
         }
 
-        await updateUser(user.id, updateData);
+        await updateUser(updateData);
         toast({
           title: 'Profile updated',
           description: 'Your profile information has been saved.',

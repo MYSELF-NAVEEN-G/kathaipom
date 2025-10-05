@@ -175,14 +175,14 @@ export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     return newUser;
 }
 
-export async function updateUser(userId: string, data: Partial<Pick<User, 'name' | 'username' | 'bio'> & { avatar?: ImagePlaceholder, coverImage?: ImagePlaceholder }>) {
+export async function updateUser(data: Partial<Pick<User, 'name' | 'username' | 'bio'> & { avatar?: ImagePlaceholder, coverImage?: ImagePlaceholder }>) {
     const { user } = await auth();
-    if (!user || user.id !== userId) {
+    if (!user) {
         throw new Error('Permission denied');
     }
 
     const users = await getUsers();
-    const userIndex = users.findIndex(u => u.id === userId);
+    const userIndex = users.findIndex(u => u.id === user.id);
 
     if (userIndex === -1) {
         throw new Error('User not found');
