@@ -5,7 +5,6 @@ import {
   User as UserIcon,
   PlusSquare,
   LogOut,
-  Settings,
   Bell,
 } from 'lucide-react';
 import {
@@ -20,22 +19,29 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Logo } from '@/components/logo';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 
-// Mock current user data
+// Mock current user data - in a real app this would come from an auth context
 const currentUser = {
   name: 'Admin User',
   username: 'admin',
   avatar: 'https://picsum.photos/seed/avatar1/100/100',
-  isAdmin: true,
+  isAdmin: true, // This flag determines if the user is an admin
 };
+
+// To test a regular user view, you could swap the above with this:
+// const currentUser = {
+//   name: 'Jane Doe',
+//   username: 'janedoe',
+//   avatar: 'https://picsum.photos/seed/avatar2/100/100',
+//   isAdmin: false,
+// };
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const isMobile = useIsMobile();
+  const router = useRouter();
 
   const menuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
@@ -43,6 +49,11 @@ export function SidebarNav() {
     { href: '#', label: 'Notifications', icon: Bell },
     { href: '#', label: 'Profile', icon: UserIcon },
   ];
+
+  const handleLogout = () => {
+    // In a real app, you would have a proper logout flow
+    router.push('/');
+  }
 
   return (
     <>
@@ -88,10 +99,8 @@ export function SidebarNav() {
             </p>
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
-            <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-              <Link href="/login">
+            <Button variant="ghost" size="icon" onClick={handleLogout} className="h-8 w-8">
                 <LogOut />
-              </Link>
             </Button>
           </div>
         </div>
