@@ -42,6 +42,14 @@ export function CreatePostForm() {
         });
         return;
     }
+     if (!content.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Content is required',
+        description: 'Please write something before publishing.',
+      });
+      return;
+    }
 
     try {
         await addPost({ content, authorId });
@@ -49,10 +57,12 @@ export function CreatePostForm() {
           title: "Post Created!",
           description: "Your new post has been successfully published.",
         });
-        (event.target as HTMLFormElement).reset();
         setContent('');
-        // Refresh the page to show the new post
+        (event.target as HTMLFormElement).reset();
+        
+        // This is key: it tells Next.js to re-fetch the data on the feed page.
         router.refresh();
+        // Redirect to the feed to see the new post
         router.push('/feed');
 
     } catch (error) {

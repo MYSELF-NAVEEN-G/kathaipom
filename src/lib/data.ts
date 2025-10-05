@@ -1,5 +1,7 @@
 import { PlaceHolderImages } from "./placeholder-images";
 import type { User, Post, Comment } from "./types";
+import fs from 'fs';
+import path from 'path';
 
 // In-memory "database"
 let users: User[] = [
@@ -34,7 +36,22 @@ let users: User[] = [
 
 let comments: Comment[] = []
 
-let posts: Post[] = [];
+const postsFilePath = path.join(process.cwd(), 'src', 'lib', 'posts.json');
+
+function readPostsFromFile(): Post[] {
+  try {
+    const data = fs.readFileSync(postsFilePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    // If the file doesn't exist or is empty, return an empty array
+    return [];
+  }
+}
+
+function writePostsToFile(posts: Post[]) {
+  fs.writeFileSync(postsFilePath, JSON.stringify(posts, null, 2), 'utf-8');
+}
+
 
 // Functions to interact with the in-memory data
 
@@ -43,10 +60,11 @@ export async function getUsers(): Promise<User[]> {
 }
 
 export async function getPosts(): Promise<Post[]> {
-  return Promise.resolve(posts);
+  return Promise.resolve(readPostsFromFile());
 }
 
 export async function addPost(postData: { content: string; authorId: string; }): Promise<Post> {
+  const posts = readPostsFromFile();
   const postImages = PlaceHolderImages.filter(p => p.id.startsWith('post-'));
   const randomImage = postImages[Math.floor(Math.random() * postImages.length)];
 
@@ -59,12 +77,14 @@ export async function addPost(postData: { content: string; authorId: string; }):
     comments: [],
     timestamp: new Date().toISOString(),
   };
-  posts = [newPost, ...posts]; // Add to the beginning of the array
+  const updatedPosts = [newPost, ...posts]; // Add to the beginning of the array
+  writePostsToFile(updatedPosts);
   return Promise.resolve(newPost);
 }
 
 
 export async function getCommentsForPost(postId: string): Promise<Comment[]> {
+    const posts = readPostsFromFile();
     return Promise.resolve(comments.filter(c => posts.find(p => p.id === postId)?.comments?.map(pc => pc.id).includes(c.id)));
 }
 
