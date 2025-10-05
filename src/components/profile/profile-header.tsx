@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useTransition } from 'react';
 import type { User } from '@/lib/types';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, UserCheck, Edit } from 'lucide-react';
+import { followUser, unfollowUser } from '@/lib/actions';
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
@@ -17,19 +18,34 @@ function Stat({ label, value }: { label: string; value: number }) {
 }
 
 export function ProfileHeader({ user, postsCount }: { user: User, postsCount: number }) {
-    const [isFollowing, setIsFollowing] = React.useState(false);
-    const [isClient, setIsClient] = React.useState(false);
-    const [isOwnProfile, setIsOwnProfile] = React.useState(false);
+    const [isPending, startTransition] = useTransition();
+    const [currentUser, setCurrentUser] = React.useState<{id: string, username: string} | null>(null);
 
     React.useEffect(() => {
-        setIsClient(true);
+        const currentId = localStorage.getItem('userId');
         const currentUsername = localStorage.getItem('userUsername');
-        setIsOwnProfile(currentUsername === user.username);
-    }, [user.username]);
+        if (currentId && currentUsername) {
+            setCurrentUser({ id: currentId, username: currentUsername });
+        }
+    }, []);
 
-    // TODO: Implement follow/unfollow logic
-    const handleFollow = () => {
-        setIsFollowing(!isFollowing);
+    const isOwnProfile = currentUser?.id === user.id;
+
+    // Check if the current user is in the displayed user's followers list
+    const isFollowing = React.useMemo(() => {
+        if (!currentUser) return false;
+        return user.followers.includes(currentUser.id);
+    }, [user.followers, currentUser]);
+
+    const handleFollowToggle = () => {
+        if (!currentUser) return;
+        startTransition(() => {
+            if (isFollowing) {
+                unfollowUser(currentUser.id, user.id);
+            } else {
+                followUser(currentUser.id, user.id);
+            }
+        });
     };
 
     return (
@@ -61,14 +77,15 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
                         <Stat label="Posts" value={postsCount} />
                         <Stat label="Followers" value={user.followers.length} />
                         <Stat label="Following" value={user.following.length} />
-                        {isClient && !isOwnProfile && (
-                             <Button onClick={handleFollow}>
-                                <UserPlus className="mr-2 h-4 w-4" />
-                                {isFollowing ? 'Unfollow' : 'Follow'}
+                        {currentUser && !isOwnProfile && (
+                             <Button onClick={handleFollowToggle} disabled={isPending} variant={isFollowing ? 'secondary' : 'default'}>
+                                {isFollowing ? <UserCheck className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />}
+                                {isFollowing ? 'Following' : 'Follow'}
                             </Button>
                         )}
-                        {isClient && isOwnProfile && (
+                        {currentUser && isOwnProfile && (
                             <Button variant="outline">
+                                <Edit className="mr-2 h-4 w-4" />
                                 Edit Profile
                             </Button>
                         )}

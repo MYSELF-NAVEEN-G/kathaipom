@@ -30,6 +30,7 @@ import Link from 'next/link';
 type UserRole = 'user' | 'writer' | 'super-admin' | null;
 
 type UserData = {
+  id: string;
   name: string;
   username: string;
   avatar: string;
@@ -42,12 +43,14 @@ export function SidebarNav() {
   const [currentUser, setCurrentUser] = React.useState<UserData | null>(null);
 
   React.useEffect(() => {
+    const userId = localStorage.getItem('userId');
     const userRole = localStorage.getItem('userRole') as UserRole;
     const userName = localStorage.getItem('userName');
     const userUsername = localStorage.getItem('userUsername');
     
-    if (userRole && userName && userUsername) {
+    if (userId && userRole && userName && userUsername) {
         setCurrentUser({
+            id: userId,
             name: userName,
             username: userUsername,
             avatar: `https://picsum.photos/seed/${userUsername}/100/100`,
@@ -56,7 +59,7 @@ export function SidebarNav() {
     } else {
         setCurrentUser(null); 
     }
-  }, [pathname]);
+  }, [pathname]); // Rerun on path change to reflect login/logout
 
   const userMenuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
@@ -68,7 +71,7 @@ export function SidebarNav() {
   const writerMenuItems = [
     { href: '/feed', label: 'Feed Preview', icon: Home },
     { href: '/admin/dashboard', label: 'Writer Dashboard', icon: LayoutDashboard },
-     { href: currentUser ? `/profile/${currentUser.username}` : '#', label: 'Profile', icon: UserIcon },
+    { href: currentUser ? `/profile/${currentUser.username}` : '#', label: 'Profile', icon: UserIcon },
   ];
 
   const adminMenuItems = [
@@ -78,9 +81,11 @@ export function SidebarNav() {
   ];
   
   const handleLogout = () => {
+    localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
     localStorage.removeItem('userUsername');
+    setCurrentUser(null);
     router.push('/');
   }
 

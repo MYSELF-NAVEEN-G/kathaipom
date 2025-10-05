@@ -1,69 +1,82 @@
 import { PlaceHolderImages } from "./placeholder-images";
-import type { User, Story, Comment } from "./types";
+import type { User, Story } from "./types";
 import fs from 'fs';
 import path from 'path';
 
-// In-memory "database"
-let users: User[] = [
-  {
-    id: "user-1",
-    name: "Admin User",
-    username: "nafadmin",
-    avatar: PlaceHolderImages.find((img) => img.id === "avatar-1")!,
-    bio: "The chief architect of the Kathaipom platform. Ensuring stories are shared and heard.",
-    coverImage: PlaceHolderImages.find((img) => img.id === "cover-1")!,
-    followers: ["user-2", "user-3"],
-    following: ["user-2", "user-3"],
-    isAdmin: true,
-  },
-  {
-    id: "user-2",
-    name: "Jane Doe",
-    username: "janedoe",
-    avatar: PlaceHolderImages.find((img) => img.id === "avatar-2")!,
-    bio: "Lover of fiction, coffee, and rainy days. Exploring the world one story at a time.",
-    coverImage: PlaceHolderImages.find((img) => img.id === "cover-2")!,
-    followers: ["user-1"],
-    following: ["user-1", "user-3"],
-    isAdmin: false,
-  },
-  {
-    id: "user-3",
-    name: "John Smith",
-    username: "johnsmith",
-    avatar: PlaceHolderImages.find((img) => img.id === "avatar-3")!,
-    bio: "Documenting my adventures in technology, travel, and gastronomy. Based in NYC.",
-    coverImage: PlaceHolderImages.find((img) => img.id === "cover-3")!,
-    followers: ["user-1", "user-2"],
-    following: ["user-1"],
-    isAdmin: false,
-  },
-];
-
-let comments: Comment[] = []
-
+const usersFilePath = path.join(process.cwd(), 'src', 'lib', 'users.json');
 const postsFilePath = path.join(process.cwd(), 'src', 'lib', 'posts.json');
+
+
+function readUsersFromFile(): User[] {
+  try {
+    if (!fs.existsSync(usersFilePath)) {
+      const initialUsers: User[] = [
+        {
+          id: "user-1",
+          name: "Admin User",
+          username: "nafadmin",
+          avatar: PlaceHolderImages.find((img) => img.id === "avatar-1")!,
+          bio: "The chief architect of the Kathaipom platform. Ensuring stories are shared and heard.",
+          coverImage: PlaceHolderImages.find((img) => img.id === "cover-1")!,
+          followers: [],
+          following: [],
+          isAdmin: true,
+        },
+        {
+          id: "user-2",
+          name: "Jane Doe",
+          username: "janedoe",
+          avatar: PlaceHolderImages.find((img) => img.id === "avatar-2")!,
+          bio: "Lover of fiction, coffee, and rainy days. Exploring the world one story at a time.",
+          coverImage: PlaceHolderImages.find((img) => img.id === "cover-2")!,
+          followers: [],
+          following: [],
+          isAdmin: false,
+        },
+        {
+          id: "user-3",
+          name: "John Smith",
+          username: "johnsmith",
+          avatar: PlaceHolderImages.find((img) => img.id === "avatar-3")!,
+          bio: "Documenting my adventures in technology, travel, and gastronomy. Based in NYC.",
+          coverImage: PlaceHolderImages.find((img) => img.id === "cover-3")!,
+          followers: [],
+          following: [],
+          isAdmin: false,
+        },
+      ];
+      writeUsersToFile(initialUsers);
+      return initialUsers;
+    }
+    const data = fs.readFileSync(usersFilePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error("Error reading users.json:", error);
+    return [];
+  }
+}
+
+export function writeUsersToFile(users: User[]) {
+  try {
+    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
+  } catch (error) {
+    console.error("Error writing to users.json:", error);
+  }
+}
+
 
 function readPostsFromFile(): Story[] {
   try {
-    // Check if the file exists before trying to read it
     if (!fs.existsSync(postsFilePath)) {
-      // If it doesn't exist, create it with an empty array
       fs.writeFileSync(postsFilePath, JSON.stringify([], null, 2), 'utf-8');
       return [];
     }
     
     const data = fs.readFileSync(postsFilePath, 'utf-8');
-    
-    // Handle case where file is empty
-    if (data.trim() === '') {
-        return [];
-    }
-
+    if (data.trim() === '') return [];
     return JSON.parse(data);
   } catch (error) {
     console.error("Error reading or parsing posts.json:", error);
-    // If there's an error (e.g., malformed JSON), return an empty array as a fallback
     return [];
   }
 }
@@ -76,22 +89,27 @@ export function writePostsToFile(posts: Story[]) {
   }
 }
 
-
-// Functions to interact with the in-memory data
+// Functions to interact with the data
 
 export async function getUsers(): Promise<User[]> {
-  const allUsers = await Promise.resolve(users);
-  // Calculate dynamic follower/following counts
-  return allUsers.map(user => {
-    const followers = allUsers.filter(u => u.following.includes(user.id)).map(u => u.id);
-    const following = allUsers.filter(u => user.following.includes(u.id)).map(u => u.id);
-    return { ...user, followers, following };
-  });
+  return Promise.resolve(readUsersFromFile());
 }
 
 export async function getUserByUsername(username: string): Promise<User | undefined> {
     const allUsers = await getUsers();
-    return Promise.resolve(allUsers.find(u => u.username === username));
+    const user = allUsers.find(u => u.username === username);
+    if (!user) return undefined;
+    
+    // Dynamically calculate followers and following based on the entire user list
+    const followers = allUsers.filter(u => u.following.includes(user.id)).map(u => u.id);
+    const following = user.following; // This is already stored correctly on the user object
+
+    return { ...user, followers, following };
+}
+
+export async function getUserById(id: string): Promise<User | undefined> {
+    const allUsers = await getUsers();
+    return allUsers.find(u => u.id === id);
 }
 
 
@@ -101,23 +119,18 @@ export async function getPosts(): Promise<Story[]> {
 
 export async function getPostsByUsername(username: string): Promise<Story[]> {
     const allPosts = await getPosts();
-    return Promise.resolve(allPosts.filter(p => p.authorUsername === username));
+    const user = await getUserByUsername(username);
+    if (!user) return [];
+    return Promise.resolve(allPosts.filter(p => p.authorId === user.id));
 }
 
-
-export async function getCommentsForPost(postId: string): Promise<Comment[]> {
-    const posts = readPostsFromFile();
-    const post = posts.find(p => p.id === postId);
-    if (!post || !post.comments) return Promise.resolve([]);
-    const postCommentIds = new Set(post.comments.map(c => c.id));
-    return Promise.resolve(comments.filter(c => postCommentIds.has(c.id)));
-}
-
-export async function getCurrentUser(): Promise<User> {
-    if (typeof window !== 'undefined') {
-        const username = localStorage.getItem('userUsername');
-        const user = users.find(u => u.username === username);
-        return user || users[0];
-    }
-    return users[0];
+export async function addUser(user: Omit<User, 'id'>): Promise<User> {
+    const users = await getUsers();
+    const newUser: User = {
+        ...user,
+        id: `user-${Date.now()}`
+    };
+    const updatedUsers = [...users, newUser];
+    writeUsersToFile(updatedUsers);
+    return newUser;
 }

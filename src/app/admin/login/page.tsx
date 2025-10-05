@@ -14,29 +14,44 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getUserByUsername } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const { toast } = useToast();
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     // Super Admin check
     if (username.toLowerCase() === 'nafadmin' && password === 'nafstud') {
-      localStorage.setItem('userRole', 'super-admin');
-      localStorage.setItem('userName', 'Super Admin');
-      localStorage.setItem('userUsername', 'nafadmin');
-      router.push('/admin/dashboard');
-      return;
+      const adminUser = await getUserByUsername('nafadmin');
+      if (adminUser) {
+        localStorage.setItem('userId', adminUser.id);
+        localStorage.setItem('userRole', 'super-admin');
+        localStorage.setItem('userName', adminUser.name);
+        localStorage.setItem('userUsername', adminUser.username);
+        router.push('/admin/dashboard');
+        return;
+      }
     }
 
     // For this prototype, any other login on this page is treated as a writer.
-    // In a real app, you'd validate writer credentials against a database.
-    // For now, we'll use the username as the name if no name is provided in signup.
-    localStorage.setItem('userRole', 'writer');
-    localStorage.setItem('userName', username); // Use username as name
-    localStorage.setItem('userUsername', username);
-    router.push('/admin/dashboard');
+    const user = await getUserByUsername(username);
+    if (user) {
+        localStorage.setItem('userId', user.id);
+        localStorage.setItem('userRole', 'writer');
+        localStorage.setItem('userName', user.name);
+        localStorage.setItem('userUsername', user.username);
+        router.push('/admin/dashboard');
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: "Invalid username or password.",
+        });
+    }
   };
 
   return (

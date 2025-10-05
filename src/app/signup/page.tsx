@@ -14,18 +14,42 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { addUser } from "@/lib/data";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useToast } from "@/hooks/use-toast";
+
 
 export default function SignupPage() {
     const router = useRouter();
+    const { toast } = useToast();
     const [name, setName] = React.useState('');
     const [username, setUsername] = React.useState('');
 
-    const handleSignUp = () => {
-        // In a real app, you'd have actual sign up logic here.
-        // For this prototype, we'll simulate a user signup.
+    const handleSignUp = async () => {
+        if (!name || !username) {
+            toast({
+                variant: 'destructive',
+                title: 'Missing information',
+                description: 'Please provide a name and username.',
+            });
+            return;
+        }
+        
+        const newUser = await addUser({
+            name,
+            username,
+            avatar: PlaceHolderImages.find(img => img.id === 'avatar-5')!,
+            bio: 'A new reader on Kathaipom.',
+            coverImage: PlaceHolderImages.find(img => img.id === 'cover-3')!,
+            followers: [],
+            following: [],
+            isAdmin: false,
+        });
+
+        localStorage.setItem('userId', newUser.id);
         localStorage.setItem('userRole', 'user');
-        localStorage.setItem('userName', name);
-        localStorage.setItem('userUsername', username);
+        localStorage.setItem('userName', newUser.name);
+        localStorage.setItem('userUsername', newUser.username);
         router.push('/feed');
     }
 

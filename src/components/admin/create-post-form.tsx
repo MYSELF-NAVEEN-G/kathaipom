@@ -26,15 +26,14 @@ export function CreatePostForm() {
 
   React.useEffect(() => {
     const role = localStorage.getItem('userRole');
+    const id = localStorage.getItem('userId');
     const name = localStorage.getItem('userName');
     const username = localStorage.getItem('userUsername');
     const isAllowed = role === 'writer' || role === 'super-admin';
     setIsWriter(isAllowed);
     
-    if (isAllowed && name && username) {
-        // Special case for super-admin to ensure correct ID is used
-        const userId = username === 'nafadmin' ? 'user-1' : username;
-        setUserInfo({ id: userId, name, username });
+    if (isAllowed && id && name && username) {
+        setUserInfo({ id, name, username });
     }
   }, []);
 

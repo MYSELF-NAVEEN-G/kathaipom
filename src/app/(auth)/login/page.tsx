@@ -14,22 +14,33 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { UserCog } from "lucide-react";
+import { getUserByUsername } from "@/lib/data"; // Assume we can use this on client for demo
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     // In a real app, you'd have actual auth logic here.
-    // For now, we find a user by username to get their name.
-    const mockUser = [{name: 'Jane Doe', username: 'janedoe'}, {name: 'John Smith', username: 'johnsmith'}].find(u => u.username === username);
-    const name = mockUser ? mockUser.name : username;
+    // For now, we find a user by username to get their full data.
+    const user = await getUserByUsername(username);
 
-    localStorage.setItem('userRole', 'user');
-    localStorage.setItem('userName', name);
-    localStorage.setItem('userUsername', username);
-    router.push('/feed');
+    if (user && !user.isAdmin) {
+      localStorage.setItem('userId', user.id);
+      localStorage.setItem('userRole', 'user');
+      localStorage.setItem('userName', user.name);
+      localStorage.setItem('userUsername', user.username);
+      router.push('/feed');
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Invalid username, password, or you might be a writer.",
+      })
+    }
   };
 
   return (
@@ -59,7 +70,7 @@ export default function LoginPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
             </div>
             <Button type="button" className="w-full" onClick={handleSignIn}>
               Sign In

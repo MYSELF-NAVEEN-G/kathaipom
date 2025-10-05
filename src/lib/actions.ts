@@ -1,8 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Story } from './types';
-import { getPosts, writePostsToFile } from './data';
+import type { Story, User } from './types';
+import { getPosts, writePostsToFile, getUsers, writeUsersToFile } from './data';
 
 export async function addStory(storyData: {
   content: string[];
@@ -65,6 +65,9 @@ export async function addComment(formData: FormData) {
             content,
             timestamp: new Date().toISOString(),
         };
+        if (!posts[postIndex].comments) {
+            posts[postIndex].comments = [];
+        }
         posts[postIndex].comments.unshift(newComment);
         await writePostsToFile(posts);
         revalidatePath('/feed');
@@ -86,5 +89,36 @@ export async function deleteStory(postId: string) {
 revalidatePath('/feed');
     if (postToDelete.authorUsername) {
         revalidatePath(`/profile/${postToDelete.authorUsername}`);
+    }
+}
+
+export async function followUser(followerId: string, followingId: string) {
+    const users = await getUsers();
+    const follower = users.find(u => u.id === followerId);
+    const userToFollow = users.find(u => u.id === followingId);
+
+    if (follower && userToFollow) {
+        if (!follower.following.includes(followingId)) {
+            follower.following.push(followingId);
+        }
+        if (!userToFollow.followers.includes(followerId)) {
+            userToFollow.followers.push(followerId);
+        }
+        await writeUsersToFile(users);
+        revalidatePath(`/profile/${userToFollow.username}`);
+    }
+}
+
+export async function unfollowUser(followerId: string, followingId: string) {
+    const users = await getUsers();
+    const followerIndex = users.findIndex(u => u.id === followerId);
+    const userToUnfollowIndex = users.findIndex(u => u.id === followingId);
+
+    if (followerIndex > -1 && userToUnfollowIndex > -1) {
+        users[followerIndex].following = users[followerIndex].following.filter(id => id !== followingId);
+        users[userToUnfollowIndex].followers = users[userToUnfollowIndex].followers.filter(id => id !== followerId);
+        
+        await writeUsersToFile(users);
+        revalidatePath(`/profile/${users[userToUnfollowIndex].username}`);
     }
 }
