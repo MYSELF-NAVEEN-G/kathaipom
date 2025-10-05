@@ -5,8 +5,8 @@ import { PostCard } from "./post-card";
 
 export function FeedDisplay({ posts }: { posts: EnrichedPost[] }) {
   return (
-    <div className="p-4 md:p-6">
-      <h2 className="text-3xl font-headline font-bold mb-6">Your Feed</h2>
+    <div className="p-4 md:p-6 h-full">
+      <h2 className="text-3xl font-headline font-bold mb-6 hidden md:block">Your Feed</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
