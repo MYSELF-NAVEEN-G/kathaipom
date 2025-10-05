@@ -92,8 +92,8 @@ export function CreatePostForm() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="post-image">Upload Image (Optional)</Label>
-                 <p className="text-sm text-muted-foreground">A random image will be added for this prototype.</p>
+                <Label htmlFor="post-image">Upload Image (Coming Soon)</Label>
+                 <p className="text-sm text-muted-foreground">Image upload functionality is not yet available.</p>
                 <div className="flex items-center gap-2">
                     <Input id="post-image" type="file" className="w-full" disabled />
                     <Button variant="outline" size="icon" asChild>

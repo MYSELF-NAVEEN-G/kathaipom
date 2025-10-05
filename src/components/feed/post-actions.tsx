@@ -12,7 +12,7 @@ export function PostActions({
 }: {
   initialLikes: number;
   commentsCount: number;
-  imageUrl: string;
+  imageUrl?: string;
 }) {
   const [likes, setLikes] = useState(initialLikes);
   const [isLiked, setIsLiked] = useState(false);
@@ -24,6 +24,7 @@ export function PostActions({
   };
 
   const handleDownload = () => {
+    if (!imageUrl) return;
     // This is a simple download trigger.
     // In a real app, you might need a more robust solution depending on browser support and image origins.
     const link = document.createElement('a');
@@ -59,14 +60,16 @@ export function PostActions({
         </Button>
       </div>
       <div className="flex items-center gap-1">
-        <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDownload}
-            aria-label="Download post image"
-          >
-            <Download className="h-5 w-5 text-foreground/70" />
-          </Button>
+        {imageUrl && (
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleDownload}
+                aria-label="Download post image"
+            >
+                <Download className="h-5 w-5 text-foreground/70" />
+            </Button>
+        )}
         <div className="text-sm text-muted-foreground hidden sm:block">
           <span className="font-medium">{likes.toLocaleString()} likes</span>
           <span className="mx-2">·</span>

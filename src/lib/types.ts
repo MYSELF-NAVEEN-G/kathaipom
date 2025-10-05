@@ -21,7 +21,7 @@ export type Post = {
   id: string;
   authorId: string;
   content: string;
-  image: ImagePlaceholder;
+  image?: ImagePlaceholder;
   likes: number;
   comments?: Comment[];
   timestamp: string;

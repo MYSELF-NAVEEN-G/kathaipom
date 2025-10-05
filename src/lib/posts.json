@@ -1,5 +1,19 @@
 [
   {
+    "id": "post-1759673818864",
+    "authorId": "user-1",
+    "content": "hi guys\n",
+    "image": {
+      "id": "post-7",
+      "description": "Post image of a cat",
+      "imageUrl": "https://images.unsplash.com/photo-1585373683920-671438c82bfa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjdXRlJTIwY2F0fGVufDB8fHx8MTc1OTU2OTExNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cute cat"
+    },
+    "likes": 0,
+    "comments": [],
+    "timestamp": "2025-10-05T14:16:58.864Z"
+  },
+  {
     "id": "post-1759673794704",
     "authorId": "user-1",
     "content": "hi ",
