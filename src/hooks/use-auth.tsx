@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { User } from '@/lib/types';
 import { http, HttpResponse } from 'msw';
 import { setupWorker } from 'msw/browser';
-import { getUsers } from '@/lib/data';
 
 // This is a workaround to prevent the worker from being initialized multiple times.
 declare global {
@@ -18,22 +17,17 @@ async function startWorker() {
         if (!window.__msw_worker_started) {
             const worker = setupWorker(
                 http.get('/api/users', async () => {
-                    // This handler now directly calls the server-side data function
-                    // because `getUsers` does not depend on 'fs' directly, but
-                    // is a server-side function. MSW worker runs in a context
-                    // that can't access `fs`, so we can't read the file here.
-                    // This is a bit of a trick for the prototype.
-                    // In a real app, this would be a true API call to a backend.
+                    // For the browser-based worker, we fetch from a special route
+                    // that will be handled by our fetch override below. This is a 
+                    // trick to get server-side data (from a file) to the client
+                    // in a prototype environment.
                     try {
-                        // For the browser-based worker, we can't use fs.
-                        // So we make another fetch call to a special route
-                        // that WILL be handled by the server.
-                        // We can't do this directly in the component because of 'use client'.
                         const res = await fetch('/users.json');
                         const users = await res.json();
                         return HttpResponse.json(users);
                     } catch (e) {
-                         return HttpResponse.json([]);
+                         console.error("MSW failed to fetch users", e);
+                         return HttpResponse.json([], { status: 500 });
                     }
                 })
             );
@@ -46,27 +40,35 @@ async function startWorker() {
     }
 }
 
-// Create a new API route to serve the users.json file.
-// We can't use the file system in a client component, so we need an API route.
-// But we also can't create files, so we use this workaround
-// to simulate the API route logic within the hook setup.
+// In a prototype environment, we can't create new API route files.
+// This is a hack to simulate an API route by overriding fetch.
+// When the app requests '/users.json', we intercept it and return 
+// the contents of the `users.json` file.
 if (typeof window !== 'undefined') {
-    // This will only run in the browser
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
         const url = args[0] instanceof Request ? args[0].url : args[0];
+        // The URL is resolved relative to the page, so we use endsWith.
         if (url.toString().endsWith('/users.json')) {
             try {
-                // This is a "server-side" fetch that can read the file.
-                // It's a hack to work around the prototype limitations.
-                const users = await getUsers();
-                 return new Response(JSON.stringify(users), {
+                // This special endpoint will be handled by the server.
+                // In a real app, this would be a proper API route.
+                const res = await originalFetch('/api/get-users-from-file');
+                const users = await res.json();
+                return new Response(JSON.stringify(users), {
                     headers: { 'Content-Type': 'application/json' }
-                })
+                });
             } catch (e) {
-                return new Response("[]", { status: 500 });
+                return new Response("[]", { status: 500, statusText: "Failed to fetch users file" });
             }
         }
+        // This is a special case for our mock API above.
+        // It's a bit of a hack to make this work without real API files.
+         if (url.toString().endsWith('/api/get-users-from-file')) {
+             // Let this one pass through to the server
+             return originalFetch(...args);
+         }
+
         return originalFetch(...args);
     };
     startWorker();
@@ -82,7 +84,7 @@ export function useAuth() {
     if (userId) {
       try {
         const res = await fetch('/api/users');
-        if (!res.ok) throw new Error('Failed to fetch');
+        if (!res.ok) throw new Error('Failed to fetch users in auth hook');
         const allUsers: User[] = await res.json();
         const currentUser = allUsers.find((u: User) => u.id === userId);
         setUser(currentUser || null);
