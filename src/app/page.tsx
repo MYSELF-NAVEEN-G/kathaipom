@@ -1,100 +1,54 @@
-import { AppLayout } from "@/components/layout/app-layout";
-import { FeedDisplay } from "@/components/feed/feed-display";
-import { getPosts, getUsers } from "@/lib/data";
-import {
-  prioritizeFeed,
-  type PrioritizeFeedInput,
-  type PrioritizeFeedOutput,
-} from "@/ai/flows/intelligent-feed-prioritization";
-import type { EnrichedPost } from "@/lib/types";
-import { Suspense } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { Logo } from "@/components/logo";
+import { ArrowRight } from "lucide-react";
 
-export default async function Home() {
-  const postsData = getPosts();
-  const usersData = getUsers();
-
-  const [posts, users] = await Promise.all([postsData, usersData]);
-
-  // Create a map for quick user lookup
-  const userMap = new Map(users.map((u) => [u.id, u]));
-
-  const aiInput: PrioritizeFeedInput = {
-    posts: posts.map((p) => ({
-      postId: p.id,
-      content: p.content,
-      authorId: p.authorId,
-      likes: p.likes,
-      comments: p.comments.length,
-    })),
-    userInterests: [
-      "modern art",
-      "minimalist photography",
-      "architecture",
-      "travel",
-      "design",
-    ],
-    userInteractionHistory: [
-      {
-        postId: "post-2",
-        interactionType: "like",
-        timestamp: new Date(Date.now() - 86400000 * 2).toISOString(),
-      },
-      {
-        postId: "post-5",
-        interactionType: "comment",
-        timestamp: new Date(Date.now() - 86400000 * 5).toISOString(),
-      },
-      {
-        postId: "post-8",
-        interactionType: "follow",
-        timestamp: new Date(Date.now() - 86400000 * 1).toISOString(),
-      },
-    ],
-  };
-
-  let prioritizedFeed: PrioritizeFeedOutput = [];
-  try {
-    if (posts.length > 0) {
-      prioritizedFeed = await prioritizeFeed(aiInput);
-    }
-  } catch (error) {
-    console.warn("AI feed prioritization failed. Falling back to chronological order.", error);
-    // If AI fails, we'll just use the default empty array, and the sort below will be chronological.
-  }
-
-
-  const priorityMap = new Map(
-    prioritizedFeed.map((p) => [p.postId, { score: p.priorityScore, reason: p.reason }])
-  );
-
-  const sortedPosts: EnrichedPost[] = posts
-    .map((post) => {
-      const author = userMap.get(post.authorId);
-      const priority = priorityMap.get(post.id);
-      if (!author) return null;
-
-      return {
-        ...post,
-        author,
-        priorityScore: priority?.score || 0,
-        reason: priority?.reason || "Not prioritized",
-      };
-    })
-    .filter((p): p is EnrichedPost => p !== null)
-    .sort((a, b) => {
-        if (prioritizedFeed.length > 0) {
-            return (b.priorityScore || 0) - (a.priorityScore || 0);
-        }
-        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    });
-
+export default function LandingPage() {
   return (
-    <main>
-      <AppLayout>
-        <Suspense fallback={<div>Loading feed...</div>}>
-          <FeedDisplay posts={sortedPosts} />
-        </Suspense>
-      </AppLayout>
-    </main>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+        <div className="absolute top-8 left-8">
+            <Logo size="medium" />
+        </div>
+      <div className="text-center mb-12">
+        <h1 className="text-5xl font-headline font-bold tracking-tight mb-4">Welcome to Kathaipom Social</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            A premium social experience. Connect, share, and discover content tailored just for you.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <CardHeader>
+            <CardTitle className="text-2xl font-headline">I am an Admin</CardTitle>
+            <CardDescription>Manage content and users.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-6">Access the admin dashboard to create new posts, moderate content, and view analytics.</p>
+            <Button asChild className="w-full">
+              <Link href="/admin/login">
+                Proceed to Admin Login <ArrowRight className="ml-2" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <CardHeader>
+            <CardTitle className="text-2xl font-headline">I am a User</CardTitle>
+            <CardDescription>Explore the social feed.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-6">Sign in to view your personalized feed, like, comment on, and share posts from creators you love.</p>
+            <Button asChild className="w-full">
+              <Link href="/login">
+                Proceed to User Login <ArrowRight className="ml-2" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+      <footer className="absolute bottom-8 text-muted-foreground text-sm">
+        © {new Date().getFullYear()} Kathaipom. All rights reserved.
+      </footer>
+    </div>
   );
 }

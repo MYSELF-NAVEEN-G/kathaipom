@@ -37,7 +37,7 @@ export function SidebarNav() {
   const isMobile = useIsMobile();
 
   const menuItems = [
-    { href: "/", label: "Feed", icon: Home },
+    { href: "/feed", label: "Feed", icon: Home },
     { href: "#", label: "Search", icon: Search },
     { href: "#", label: "Profile", icon: UserIcon },
   ];
