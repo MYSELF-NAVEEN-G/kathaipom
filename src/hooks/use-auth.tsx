@@ -2,34 +2,38 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import type { User } from '@/lib/types';
-import { http } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { setupWorker } from 'msw/browser';
+import { getUsers } from '@/lib/data';
 
+// This is a workaround to prevent the worker from being initialized multiple times.
 declare global {
   interface Window {
     __msw_worker_started?: Promise<void>;
   }
 }
 
-// Set up the MSW worker once.
 async function startWorker() {
     if (typeof window !== 'undefined') {
         if (!window.__msw_worker_started) {
             const worker = setupWorker(
                 http.get('/api/users', async () => {
-                    // This is a temporary solution to avoid direct `fs` access on the client.
-                    // This endpoint simply fetches the static `users.json` that gets
-                    // updated by server actions.
+                    // This handler now directly calls the server-side data function
+                    // because `getUsers` does not depend on 'fs' directly, but
+                    // is a server-side function. MSW worker runs in a context
+                    // that can't access `fs`, so we can't read the file here.
+                    // This is a bit of a trick for the prototype.
+                    // In a real app, this would be a true API call to a backend.
                     try {
+                        // For the browser-based worker, we can't use fs.
+                        // So we make another fetch call to a special route
+                        // that WILL be handled by the server.
+                        // We can't do this directly in the component because of 'use client'.
                         const res = await fetch('/users.json');
                         const users = await res.json();
-                         return new Response(JSON.stringify(users), {
-                            headers: { 'Content-Type': 'application/json' }
-                        })
+                        return HttpResponse.json(users);
                     } catch (e) {
-                         return new Response(JSON.stringify([]), {
-                            headers: { 'Content-Type': 'application/json' }
-                        })
+                         return HttpResponse.json([]);
                     }
                 })
             );
@@ -42,19 +46,41 @@ async function startWorker() {
     }
 }
 
+// Create a new API route to serve the users.json file.
+// We can't use the file system in a client component, so we need an API route.
+// But we also can't create files, so we use this workaround
+// to simulate the API route logic within the hook setup.
+if (typeof window !== 'undefined') {
+    // This will only run in the browser
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+        const url = args[0] instanceof Request ? args[0].url : args[0];
+        if (url.toString().endsWith('/users.json')) {
+            try {
+                // This is a "server-side" fetch that can read the file.
+                // It's a hack to work around the prototype limitations.
+                const users = await getUsers();
+                 return new Response(JSON.stringify(users), {
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            } catch (e) {
+                return new Response("[]", { status: 500 });
+            }
+        }
+        return originalFetch(...args);
+    };
+    startWorker();
+}
+
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const initializeAuth = useCallback(async () => {
-    // Ensure the worker is running before we try to fetch.
-    await startWorker();
-    
     const userId = localStorage.getItem('userId');
     if (userId) {
       try {
-        // Fetch from the mock API route now, not the static file
         const res = await fetch('/api/users');
         if (!res.ok) throw new Error('Failed to fetch');
         const allUsers: User[] = await res.json();
@@ -73,9 +99,8 @@ export function useAuth() {
   useEffect(() => {
     initializeAuth();
 
-    // Listen for changes in localStorage from other tabs/windows
     const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'userId') {
+        if (event.key === 'userId' || event.key === 'userRole') {
             initializeAuth();
         }
     };
