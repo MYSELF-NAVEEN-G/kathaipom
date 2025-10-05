@@ -57,6 +57,8 @@ function CommentForm({ postId }: { postId: string }) {
 
 export function PostCard({ post: story }: { post: Story & { reason?: string } }) {
   const avatarUrl = `https://picsum.photos/seed/${story.authorUsername}/100/100`;
+  const firstPageContent = Array.isArray(story.content) ? story.content[0] : story.content;
+
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 duration-300 ease-in-out flex flex-col">
@@ -100,7 +102,7 @@ export function PostCard({ post: story }: { post: Story & { reason?: string } })
             </div>
         )}
         <div className="p-4 text-sm">
-            <p className="line-clamp-2">{story.content}</p>
+            <p className="line-clamp-3">{firstPageContent}</p>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start p-0 mt-auto">

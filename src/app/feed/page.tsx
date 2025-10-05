@@ -20,7 +20,8 @@ export default async function FeedPage() {
     const aiInput: PrioritizeFeedInput = {
       posts: posts.map((p) => ({
         postId: p.id,
-        content: p.content,
+        // Send only the first page to the AI to keep the prompt concise
+        content: Array.isArray(p.content) ? p.content[0] || '' : p.content,
         authorId: p.authorId,
         likes: p.likes,
         comments: p.comments?.length || 0,

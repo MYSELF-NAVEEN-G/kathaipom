@@ -25,7 +25,7 @@ export type Story = {
   authorId: string;
   authorName: string;
   authorUsername: string;
-  content: string;
+  content: string[];
   image?: ImagePlaceholder;
   likes: number;
   comments: Comment[];

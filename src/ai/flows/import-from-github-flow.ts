@@ -82,7 +82,7 @@ const importFromGithubFlow = ai.defineFlow(
         
         const newStory: Story = {
             id: `post-${Date.now()}-${Math.random()}`,
-            content: content,
+            content: [content], // Wrap content in an array for multi-page format
             authorId: author.id,
             authorName: author.name,
             authorUsername: author.username,

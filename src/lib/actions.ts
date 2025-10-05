@@ -3,21 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import type { Story } from './types';
 import { getPosts, writePostsToFile } from './data';
-import { PlaceHolderImages, type ImagePlaceholder } from './placeholder-images';
 
 export async function addStory(storyData: {
-  content: string;
+  content: string[];
   authorId: string;
   authorName: string;
   authorUsername: string;
-  imageId?: string;
 }) {
   const stories = await getPosts();
-
-  let image: ImagePlaceholder | undefined = undefined;
-  if (storyData.imageId) {
-    image = PlaceHolderImages.find(p => p.id === storyData.imageId);
-  }
 
   const newStory: Story = {
     id: `post-${Date.now()}`,
@@ -25,7 +18,6 @@ export async function addStory(storyData: {
     authorName: storyData.authorName,
     authorUsername: storyData.authorUsername,
     content: storyData.content,
-    image: image,
     likes: 0,
     comments: [],
     timestamp: new Date().toISOString(),
@@ -91,6 +83,8 @@ export async function deleteStory(postId: string) {
     const updatedPosts = posts.filter(p => p.id !== postId);
     
     await writePostsToFile(updatedPosts);
-    revalidatePath('/feed');
-    revalidatePath(`/profile/${postToDelete.authorUsername}`);
+revalidatePath('/feed');
+    if (postToDelete.authorUsername) {
+        revalidatePath(`/profile/${postToDelete.authorUsername}`);
+    }
 }

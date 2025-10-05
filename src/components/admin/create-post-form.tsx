@@ -1,18 +1,14 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ImagePlus, Send, CheckCircle } from "lucide-react";
+import { Send, Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from "lucide-react";
 import { addStory } from "@/lib/actions";
 import { useRouter } from "next/navigation";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 
 type UserInfo = {
     id: string;
@@ -20,55 +16,13 @@ type UserInfo = {
     username: string;
 }
 
-function ImageSelector({ selectedImageId, onSelect }: { selectedImageId: string | null, onSelect: (id: string) => void }) {
-  const postImages = PlaceHolderImages.filter(img => img.id.startsWith('post-'));
-
-  return (
-    <div className="grid gap-2">
-      <Label>Select a Cover Image</Label>
-      <ScrollArea className="w-full whitespace-nowrap rounded-md">
-        <div className="flex w-max space-x-4 pb-4">
-          {postImages.map((image) => (
-            <div
-              key={image.id}
-              className={cn(
-                "relative flex-shrink-0 w-40 h-40 rounded-md overflow-hidden cursor-pointer group border-4",
-                selectedImageId === image.id ? "border-primary" : "border-transparent"
-              )}
-              onClick={() => onSelect(image.id)}
-            >
-              <Image
-                src={image.imageUrl}
-                alt={image.description}
-                fill
-                className="object-cover transition-transform group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
-               <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors" />
-              {selectedImageId === image.id && (
-                <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
-                  <CheckCircle className="h-5 w-5" />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
-    </div>
-  );
-}
-
-
 export function CreatePostForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isWriter, setIsWriter] = React.useState(false);
   const [userInfo, setUserInfo] = React.useState<UserInfo | null>(null);
-  const [content, setContent] = React.useState('');
-  const [selectedImageId, setSelectedImageId] = React.useState<string | null>(null);
+  const [pages, setPages] = useState<string[]>(['']);
   const formRef = React.useRef<HTMLFormElement>(null);
-
 
   React.useEffect(() => {
     const role = localStorage.getItem('userRole');
@@ -84,7 +38,41 @@ export function CreatePostForm() {
     }
   }, []);
 
-  const handleFormAction = async (formData: FormData) => {
+  const handlePageContentChange = (index: number, value: string) => {
+    const newPages = [...pages];
+    newPages[index] = value;
+    setPages(newPages);
+  };
+
+  const addPage = () => {
+    setPages([...pages, '']);
+  };
+
+  const removePage = (index: number) => {
+    if (pages.length <= 1) {
+        toast({
+            variant: "destructive",
+            title: "Cannot remove last page",
+            description: "A story must have at least one page.",
+        });
+        return;
+    }
+    const newPages = pages.filter((_, i) => i !== index);
+    setPages(newPages);
+  };
+  
+  const movePage = (index: number, direction: 'up' | 'down') => {
+      const newPages = [...pages];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= newPages.length) return;
+      
+      const temp = newPages[index];
+      newPages[index] = newPages[targetIndex];
+      newPages[targetIndex] = temp;
+      setPages(newPages);
+  }
+
+  const handleFormAction = async () => {
     if (!isWriter || !userInfo) {
         toast({
             variant: "destructive",
@@ -94,8 +82,9 @@ export function CreatePostForm() {
         return;
     }
     
-    const content = formData.get('content') as string;
-    if (!content.trim()) {
+    const storyContent = pages.map(p => p.trim()).filter(p => p.length > 0);
+
+    if (storyContent.length === 0) {
       toast({
         variant: 'destructive',
         title: 'Story is empty',
@@ -106,11 +95,10 @@ export function CreatePostForm() {
 
     try {
         await addStory({
-            content,
+            content: storyContent,
             authorId: userInfo.id,
             authorName: userInfo.name,
             authorUsername: userInfo.username,
-            imageId: selectedImageId ?? undefined
         });
 
         toast({
@@ -119,8 +107,7 @@ export function CreatePostForm() {
         });
 
         // Reset form
-        setContent('');
-        setSelectedImageId(null);
+        setPages(['']);
         formRef.current?.reset();
         
         // Redirect to the feed to see the new story
@@ -140,19 +127,45 @@ export function CreatePostForm() {
       <fieldset disabled={!isWriter}>
         <Card>
           <CardContent className="p-6 space-y-6">
-            <div className="grid gap-2">
-              <Label htmlFor="post-content">Your Story</Label>
-              <Textarea
-                id="post-content"
-                name="content"
-                placeholder="Once upon a time..."
-                required
-                rows={5}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-              />
+             <div className="grid gap-4">
+                 <Label>Your Story Pages</Label>
+                 <div className="space-y-4">
+                 {pages.map((pageContent, index) => (
+                    <div key={index} className="flex items-start gap-2 p-3 rounded-lg border bg-background relative group">
+                        <div className="flex flex-col gap-1 items-center pt-1">
+                             <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                             <span className="text-xs font-bold text-muted-foreground">{index + 1}</span>
+                        </div>
+                        <Textarea
+                            id={`page-${index}`}
+                            name={`page-${index}`}
+                            placeholder={`Page ${index + 1}...`}
+                            required
+                            rows={5}
+                            value={pageContent}
+                            onChange={(e) => handlePageContentChange(index, e.target.value)}
+                            className="flex-1"
+                        />
+                        <div className="flex flex-col gap-1">
+                             <Button type="button" size="icon" variant="ghost" onClick={() => movePage(index, 'up')} disabled={index === 0} className="h-7 w-7">
+                                <ArrowUp className="h-4 w-4" />
+                             </Button>
+                             <Button type="button" size="icon" variant="ghost" onClick={() => movePage(index, 'down')} disabled={index === pages.length - 1} className="h-7 w-7">
+                                <ArrowDown className="h-4 w-4" />
+                             </Button>
+                             <Button type="button" size="icon" variant="destructive" onClick={() => removePage(index)} className="h-7 w-7">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                 ))}
+                 </div>
+
+                 <Button type="button" variant="outline" onClick={addPage}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Page
+                </Button>
             </div>
-            <ImageSelector selectedImageId={selectedImageId} onSelect={setSelectedImageId} />
           </CardContent>
           <CardFooter className="flex justify-end p-6 pt-0">
             <Button type="submit">

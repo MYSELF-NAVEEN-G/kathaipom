@@ -14,7 +14,7 @@ const PrioritizeFeedInputSchema = z.object({
   posts: z.array(
     z.object({
       postId: z.string().describe('The unique identifier of the story.'),
-      content: z.string().describe('The text content of the story.'),
+      content: z.string().describe('The text content of the story. This will be the first page.'),
       authorId: z.string().describe('The unique identifier of the story author.'),
       likes: z.number().describe('The number of likes the story has.'),
       comments: z.number().describe('The number of comments the story has.'),
