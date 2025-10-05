@@ -28,7 +28,7 @@ export default function LoginPage() {
     // In a real app, you'd have actual auth logic here.
     // For now, we find a user by username from the fetched data.
     try {
-        const res = await fetch('/users.json');
+        const res = await fetch('/api/users');
         if (!res.ok) throw new Error("Failed to fetch users");
         const users: User[] = await res.json();
         const user = users.find(u => u.username === username);

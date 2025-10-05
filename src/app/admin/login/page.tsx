@@ -25,7 +25,7 @@ export default function AdminLoginPage() {
 
   const handleSignIn = async () => {
      try {
-        const res = await fetch('/users.json');
+        const res = await fetch('/api/users');
         if (!res.ok) throw new Error("Failed to fetch users");
         const users: User[] = await res.json();
 
