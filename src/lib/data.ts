@@ -80,7 +80,13 @@ export function writePostsToFile(posts: Story[]) {
 // Functions to interact with the in-memory data
 
 export async function getUsers(): Promise<User[]> {
-  return Promise.resolve(users);
+  const allUsers = await Promise.resolve(users);
+  // Calculate dynamic follower/following counts
+  return allUsers.map(user => {
+    const followers = allUsers.filter(u => u.following.includes(user.id)).map(u => u.id);
+    const following = allUsers.filter(u => user.following.includes(u.id)).map(u => u.id);
+    return { ...user, followers, following };
+  });
 }
 
 export async function getUserByUsername(username: string): Promise<User | undefined> {

@@ -17,7 +17,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     notFound();
   }
 
-  const stories = await getPostsByUsername(params.username);
+  // Pass the user's actual ID to get their posts
+  const stories = await getPostsByUsername(user.username);
 
   return (
     <AppLayout>

@@ -78,7 +78,9 @@ export function CreatePostForm() {
     setIsWriter(isAllowed);
     
     if (isAllowed && name && username) {
-        setUserInfo({ id: username, name, username });
+        // Special case for super-admin to ensure correct ID is used
+        const userId = username === 'nafadmin' ? 'user-1' : username;
+        setUserInfo({ id: userId, name, username });
     }
   }, []);
 
