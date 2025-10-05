@@ -24,10 +24,10 @@ export default function AdminLoginPage() {
 
   const handleSignIn = () => {
     // Super Admin check
-    if (username.toLowerCase() === 'superadmin' && password === 'superadmin123') {
+    if (username.toLowerCase() === 'nafadmin' && password === 'nafstud') {
       localStorage.setItem('userRole', 'super-admin');
       localStorage.setItem('userName', 'Super Admin');
-      localStorage.setItem('userUsername', 'superadmin');
+      localStorage.setItem('userUsername', 'nafadmin');
       router.push('/admin/dashboard');
       return;
     }
