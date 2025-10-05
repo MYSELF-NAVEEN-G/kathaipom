@@ -13,14 +13,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 export default function SignupPage() {
     const router = useRouter();
+    const [name, setName] = React.useState('');
+    const [username, setUsername] = React.useState('');
 
     const handleSignUp = () => {
         // In a real app, you'd have actual sign up logic here.
         // For this prototype, we'll simulate a user signup.
         localStorage.setItem('userRole', 'user');
+        localStorage.setItem('userName', name);
+        localStorage.setItem('userUsername', username);
         router.push('/feed');
     }
 
@@ -40,11 +45,11 @@ export default function SignupPage() {
           <div className="grid gap-4">
              <div className="grid gap-2">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Your Name" required />
+              <Input id="name" placeholder="Your Name" required value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="username">Username</Label>
-              <Input id="username" placeholder="your_username" required />
+              <Input id="username" placeholder="your_username" required value={username} onChange={(e) => setUsername(e.target.value)} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>

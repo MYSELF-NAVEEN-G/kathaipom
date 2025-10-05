@@ -16,6 +16,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function AdminLoginPage() {
+  const [name, setName] = useState('');
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
@@ -28,10 +29,14 @@ export default function AdminLoginPage() {
     ) {
       // Set role in localStorage for admin
       localStorage.setItem('userRole', 'admin');
+      localStorage.setItem('userName', name);
+      localStorage.setItem('userUsername', adminId);
       router.push('/admin/dashboard');
     } else {
       // On failure, clear role and redirect to user login
       localStorage.removeItem('userRole');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userUsername');
       router.push('/login');
     }
   };
@@ -52,6 +57,17 @@ export default function AdminLoginPage() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="admin-name">Name</Label>
+              <Input
+                id="admin-name"
+                type="text"
+                placeholder="Enter your name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="admin-id">ID</Label>
               <Input

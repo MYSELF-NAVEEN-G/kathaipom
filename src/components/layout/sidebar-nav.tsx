@@ -32,20 +32,7 @@ type UserData = {
   isAdmin: boolean;
 };
 
-const adminUser: UserData = {
-  name: 'Admin User',
-  username: 'admin',
-  avatar: 'https://picsum.photos/seed/avatar1/100/100',
-  isAdmin: true,
-};
-
-const regularUser: UserData = {
-  name: 'Jane Doe',
-  username: 'janedoe',
-  avatar: 'https://picsum.photos/seed/avatar2/100/100',
-  isAdmin: false,
-};
-
+const defaultAvatar = 'https://picsum.photos/seed/avatar-default/100/100';
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -55,15 +42,22 @@ export function SidebarNav() {
   React.useEffect(() => {
     // On component mount, check localStorage to set the user role
     const userRole = localStorage.getItem('userRole');
-    if (userRole === 'admin') {
-      setCurrentUser(adminUser);
-    } else if (userRole === 'user') {
-      setCurrentUser(regularUser);
+    const userName = localStorage.getItem('userName');
+    const userUsername = localStorage.getItem('userUsername');
+    
+    if (userRole && userName && userUsername) {
+        const isAdmin = userRole === 'admin';
+        setCurrentUser({
+            name: userName,
+            username: userUsername,
+            avatar: `https://picsum.photos/seed/${userUsername}/100/100`,
+            isAdmin: isAdmin,
+        })
     } else {
-      // If no role, default to user or redirect to login
-      setCurrentUser(regularUser);
+        // If no role, default to a guest-like state or redirect
+        setCurrentUser(null); 
     }
-  }, []);
+  }, [pathname]); // Re-run on path change to update active states
 
   const userMenuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
@@ -77,18 +71,34 @@ export function SidebarNav() {
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ];
   
-  if (!currentUser) {
-    // You can render a loading state or skeleton here
-    return null; 
-  }
-
-  const menuItems = currentUser.isAdmin ? adminMenuItems : userMenuItems;
-
   const handleLogout = () => {
     // Clear the role from localStorage on logout
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userUsername');
     router.push('/');
   }
+
+  if (!currentUser) {
+    // Render a logged-out state or a loading skeleton
+    return (
+        <>
+            <SidebarHeader className="p-4 flex items-center gap-2">
+                <Logo size="small" />
+                <SidebarInput placeholder="Search..." className="mt-0" />
+            </SidebarHeader>
+            <SidebarContent className="p-4 pt-0" />
+            <SidebarSeparator />
+            <SidebarFooter className="p-4">
+                 <Button asChild className="w-full">
+                    <Link href="/login">Sign In</Link>
+                 </Button>
+            </SidebarFooter>
+        </>
+    );
+  }
+
+  const menuItems = currentUser.isAdmin ? adminMenuItems : userMenuItems;
 
   return (
     <>

@@ -13,14 +13,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [username, setUsername] = React.useState('');
 
   const handleSignIn = () => {
     // In a real app, you'd have actual auth logic here.
     // For this prototype, we'll simulate a user login.
     localStorage.setItem('userRole', 'user');
+    localStorage.setItem('userName', username); // Store username as name for now
+    localStorage.setItem('userUsername', username);
     router.push('/feed');
   };
 
@@ -45,6 +49,8 @@ export default function LoginPage() {
                 type="text"
                 placeholder="your_username"
                 required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
