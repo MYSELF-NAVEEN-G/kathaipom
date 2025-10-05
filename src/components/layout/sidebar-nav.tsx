@@ -6,6 +6,7 @@ import {
   PlusSquare,
   LogOut,
   Settings,
+  Bell,
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -39,6 +40,7 @@ export function SidebarNav() {
   const menuItems = [
     { href: "/feed", label: "Feed", icon: Home },
     { href: "#", label: "Search", icon: Search },
+    { href: "#", label: "Notifications", icon: Bell },
     { href: "#", label: "Profile", icon: UserIcon },
   ];
 
@@ -50,8 +52,8 @@ export function SidebarNav() {
       </SidebarHeader>
       <SidebarContent className="p-4 pt-0">
         {currentUser.isAdmin && (
-          <Button className="w-full mb-4">
-            <PlusSquare className="mr-2 h-4 w-4" />
+          <Button className="w-full mb-4" size="lg">
+            <PlusSquare className="mr-2 h-5 w-5" />
             Create Post
           </Button>
         )}

@@ -8,6 +8,9 @@ import {
 } from "@/ai/flows/intelligent-feed-prioritization";
 import type { EnrichedPost } from "@/lib/types";
 import { Suspense } from "react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { PlusSquare } from "lucide-react";
 
 export default async function FeedPage() {
   const postsData = getPosts();
@@ -58,13 +61,18 @@ export default async function FeedPage() {
       prioritizedFeed = await prioritizeFeed(aiInput);
     }
   } catch (error) {
-    console.warn("AI feed prioritization failed. Falling back to chronological order.", error);
+    console.warn(
+      "AI feed prioritization failed. Falling back to chronological order.",
+      error
+    );
     // If AI fails, we'll just use the default empty array, and the sort below will be chronological.
   }
 
-
   const priorityMap = new Map(
-    prioritizedFeed.map((p) => [p.postId, { score: p.priorityScore, reason: p.reason }])
+    prioritizedFeed.map((p) => [
+      p.postId,
+      { score: p.priorityScore, reason: p.reason },
+    ])
   );
 
   const sortedPosts: EnrichedPost[] = posts
@@ -82,17 +90,29 @@ export default async function FeedPage() {
     })
     .filter((p): p is EnrichedPost => p !== null)
     .sort((a, b) => {
-        if (prioritizedFeed.length > 0) {
-            return (b.priorityScore || 0) - (a.priorityScore || 0);
-        }
-        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      if (prioritizedFeed.length > 0) {
+        return (b.priorityScore || 0) - (a.priorityScore || 0);
+      }
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
 
   return (
     <main>
       <AppLayout>
-        <Suspense fallback={<div>Loading feed...</div>}>
-          <FeedDisplay posts={sortedPosts} />
+        <Suspense fallback={<div className="p-6">Loading feed...</div>}>
+          {sortedPosts.length > 0 ? (
+            <FeedDisplay posts={sortedPosts} />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] text-center p-6">
+              <h2 className="text-2xl font-headline font-bold mb-2">
+                Your Feed is Empty
+              </h2>
+              <p className="text-muted-foreground mb-6 max-w-sm">
+                It looks like there are no posts to show right now. Admins can
+                start by creating a new post.
+              </p>
+            </div>
+          )}
         </Suspense>
       </AppLayout>
     </main>
