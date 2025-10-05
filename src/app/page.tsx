@@ -54,9 +54,12 @@ export default async function Home() {
 
   let prioritizedFeed: PrioritizeFeedOutput = [];
   try {
-    prioritizedFeed = await prioritizeFeed(aiInput);
+    if (posts.length > 0) {
+      prioritizedFeed = await prioritizeFeed(aiInput);
+    }
   } catch (error) {
     console.warn("AI feed prioritization failed. Falling back to chronological order.", error);
+    // If AI fails, we'll just use the default empty array, and the sort below will be chronological.
   }
 
 
