@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useTransition, useState } from 'react';
+import React, { useTransition, useState, useEffect } from 'react';
 import type { User } from '@/lib/types';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,8 +24,16 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
     const [isPending, startTransition] = useTransition();
     const { user: currentUser } = useAuth();
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isOwnProfile, setIsOwnProfile] = useState(false);
 
-    const isOwnProfile = currentUser?.id === user.id;
+    useEffect(() => {
+        if (currentUser && user) {
+            setIsOwnProfile(currentUser.id === user.id);
+        } else {
+            setIsOwnProfile(false);
+        }
+    }, [currentUser, user]);
+
 
     const isFollowing = React.useMemo(() => {
         if (!currentUser || !user.followers) return false;
