@@ -44,11 +44,11 @@ export function SidebarNav() {
 
   return (
     <>
-      <SidebarHeader className="p-4">
-        <Logo />
-        <SidebarInput placeholder="Search..." className="mt-2" />
+      <SidebarHeader className="p-4 flex items-center gap-2">
+        <Logo size="small" />
+        <SidebarInput placeholder="Search..." className="mt-0" />
       </SidebarHeader>
-      <SidebarContent className="p-4">
+      <SidebarContent className="p-4 pt-0">
         {currentUser.isAdmin && (
           <Button className="w-full mb-4">
             <PlusSquare className="mr-2 h-4 w-4" />
@@ -75,7 +75,7 @@ export function SidebarNav() {
       <SidebarSeparator />
       <SidebarFooter className="p-4">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
+          <Avatar className="h-9 w-9">
             <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
             <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
           </Avatar>
@@ -86,7 +86,7 @@ export function SidebarNav() {
             </p>
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon" asChild className="h-8 w-8">
                 <Link href="/login"><LogOut /></Link>
             </Button>
           </div>
