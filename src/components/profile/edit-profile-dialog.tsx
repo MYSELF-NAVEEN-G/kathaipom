@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useTransition } from 'react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,9 @@ import { z } from 'zod';
 import type { User } from '@/lib/types';
 import { updateUser } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { useTransition } from 'react';
+import { Upload } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
 
 const profileFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -46,6 +49,12 @@ type EditProfileDialogProps = {
 export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialogProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
+  const coverInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -55,16 +64,38 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
       bio: user.bio,
     },
   });
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<string | null>>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              setter(reader.result as string);
+          }
+          reader.readAsDataURL(file);
+      }
+  }
 
   const onSubmit = (data: ProfileFormValues) => {
     startTransition(async () => {
       try {
-        await updateUser(user.id, data);
+        const updateData: Parameters<typeof updateUser>[1] = { ...data };
+        if (avatarPreview) {
+            updateData.avatar = { ...user.avatar, imageUrl: avatarPreview };
+        }
+        if (coverPreview) {
+            updateData.coverImage = { ...user.coverImage, imageUrl: coverPreview };
+        }
+
+        await updateUser(user.id, updateData);
         toast({
           title: 'Profile updated',
           description: 'Your profile information has been saved.',
         });
         onOpenChange(false);
+        // Reset previews after successful submission
+        setAvatarPreview(null);
+        setCoverPreview(null);
       } catch (error) {
         toast({
           variant: 'destructive',
@@ -74,10 +105,20 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
       }
     });
   };
+  
+  const onDialogOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+        // Reset form and previews when dialog is closed
+        form.reset({ name: user.name, username: user.username, bio: user.bio });
+        setAvatarPreview(null);
+        setCoverPreview(null);
+    }
+    onOpenChange(isOpen);
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={onDialogOpenChange}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>
@@ -85,7 +126,33 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+            <div className="space-y-2">
+                <FormLabel>Cover Image</FormLabel>
+                <div className="relative w-full aspect-[16/9] rounded-md overflow-hidden group">
+                     <Image src={coverPreview || user.coverImage.imageUrl} alt="Cover image preview" fill className="object-cover" />
+                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Button type="button" variant="outline" size="sm" onClick={() => coverInputRef.current?.click()}>
+                             <Upload className="mr-2 h-4 w-4" /> Change
+                         </Button>
+                         <Input type="file" accept="image/*" className="hidden" ref={coverInputRef} onChange={(e) => handleFileChange(e, setCoverPreview)} />
+                     </div>
+                </div>
+            </div>
+            
+            <div className="space-y-2">
+                <FormLabel>Profile Photo</FormLabel>
+                 <div className="relative w-24 h-24 rounded-full overflow-hidden group">
+                     <Image src={avatarPreview || user.avatar.imageUrl} alt="Avatar preview" fill className="object-cover" />
+                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20" onClick={() => avatarInputRef.current?.click()}>
+                             <Upload className="h-4 w-4" />
+                         </Button>
+                         <Input type="file" accept="image/*" className="hidden" ref={avatarInputRef} onChange={(e) => handleFileChange(e, setAvatarPreview)} />
+                     </div>
+                </div>
+            </div>
+          
             <FormField
               control={form.control}
               name="name"
@@ -129,7 +196,7 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
                 </FormItem>
               )}
             />
-             <DialogFooter>
+             <DialogFooter className="pt-4">
                 <DialogClose asChild>
                     <Button type="button" variant="secondary">Cancel</Button>
                 </DialogClose>

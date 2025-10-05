@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Story, Comment, User } from './types';
+import type { Story, Comment, User, ImagePlaceholder } from './types';
 import { getPosts, writePostsToFile, getUsers, writeUsersToFile, getUserById } from './data';
 import { auth } from './auth';
 
@@ -168,7 +168,7 @@ export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     return newUser;
 }
 
-export async function updateUser(userId: string, data: Partial<Pick<User, 'name' | 'username' | 'bio'>>) {
+export async function updateUser(userId: string, data: Partial<Pick<User, 'name' | 'username' | 'bio'> & { avatar?: ImagePlaceholder, coverImage?: ImagePlaceholder }>) {
     const { user } = await auth();
     if (!user || user.id !== userId) {
         throw new Error('Permission denied');
