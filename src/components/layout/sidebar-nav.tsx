@@ -6,6 +6,7 @@ import {
   PlusSquare,
   LogOut,
   Bell,
+  LayoutDashboard
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -43,12 +44,19 @@ export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const menuItems = [
+  const userMenuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
     { href: '#', label: 'Search', icon: Search },
     { href: '#', label: 'Notifications', icon: Bell },
     { href: '#', label: 'Profile', icon: UserIcon },
   ];
+
+  const adminMenuItems = [
+    { href: '/feed', label: 'Feed Preview', icon: Home },
+    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  ];
+
+  const menuItems = currentUser.isAdmin ? adminMenuItems : userMenuItems;
 
   const handleLogout = () => {
     // In a real app, you would have a proper logout flow
@@ -63,10 +71,12 @@ export function SidebarNav() {
       </SidebarHeader>
       <SidebarContent className="p-4 pt-0">
         {currentUser.isAdmin && (
-          <Button className="w-full mb-4" size="lg">
-            <PlusSquare className="mr-2 h-5 w-5" />
-            Create Post
-          </Button>
+           <Button asChild className="w-full mb-4" size="lg">
+             <Link href="/admin/dashboard">
+               <PlusSquare className="mr-2 h-5 w-5" />
+               Create Post
+             </Link>
+           </Button>
         )}
         <SidebarMenu>
           {menuItems.map((item) => (

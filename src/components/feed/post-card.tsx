@@ -59,7 +59,7 @@ export function PostCard({ post }: { post: EnrichedPost }) {
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start p-0">
-        <PostActions initialLikes={post.likes} commentsCount={post.comments.length} />
+        <PostActions initialLikes={post.likes} commentsCount={post.comments.length} imageUrl={post.image.imageUrl} />
         <p className="px-4 pb-4 text-xs text-muted-foreground">
           {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
         </p>

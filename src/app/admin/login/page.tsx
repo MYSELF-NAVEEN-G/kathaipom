@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
       (adminId === 'nafadmin' && password === 'naveen') ||
       (adminId === 'jed' && password === 'admins123')
     ) {
-      router.push('/feed');
+      router.push('/admin/dashboard');
     } else {
       router.push('/login');
     }
