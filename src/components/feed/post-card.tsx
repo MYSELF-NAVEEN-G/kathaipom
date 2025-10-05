@@ -56,21 +56,23 @@ function CommentForm({ postId }: { postId: string }) {
 }
 
 export function PostCard({ post: story }: { post: Story & { reason?: string } }) {
-  const avatarUrl = `https://picsum.photos/seed/${story.authorUsername}/100/100`;
+  const authorName = story.authorName || 'Unknown Author';
+  const authorUsername = story.authorUsername || 'unknown';
+  
+  const avatarUrl = `https://picsum.photos/seed/${authorUsername}/100/100`;
   const firstPageContent = Array.isArray(story.content) ? story.content[0] : story.content;
   const firstImage = (story.images && story.images.length > 0) ? story.images[0] : null;
-
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 duration-300 ease-in-out flex flex-col">
       <CardHeader className="flex flex-row items-center gap-3 p-4">
         <Avatar>
-          <AvatarImage src={avatarUrl} alt={story.authorName} />
-          <AvatarFallback>{story.authorName.charAt(0)}</AvatarFallback>
+          <AvatarImage src={avatarUrl} alt={authorName} />
+          <AvatarFallback>{authorName?.charAt(0) || "-"}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <p className="font-semibold text-sm">{story.authorName}</p>
-          <p className="text-xs text-muted-foreground">@{story.authorUsername}</p>
+          <p className="font-semibold text-sm">{authorName}</p>
+          <p className="text-xs text-muted-foreground">@{authorUsername}</p>
         </div>
         <div className="flex items-center gap-1">
             {story.reason && (
