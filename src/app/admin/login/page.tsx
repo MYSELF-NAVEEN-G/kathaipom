@@ -15,7 +15,7 @@ import { Logo } from '@/components/logo';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { users } from '@/lib/users'; // Import mock data safely
+import type { User } from '@/lib/types';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -23,36 +23,47 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleSignIn = () => {
-    // Super Admin check
-    if (username.toLowerCase() === 'nafadmin' && password === 'nafstud') {
-      const adminUser = users.find(u => u.username === 'nafadmin');
-      if (adminUser) {
-        localStorage.setItem('userId', adminUser.id);
-        localStorage.setItem('userRole', 'super-admin');
-        localStorage.setItem('userName', adminUser.name);
-        localStorage.setItem('userUsername', adminUser.username);
-        document.cookie = `userId=${adminUser.id}; path=/; max-age=604800`;
-        router.push('/admin/dashboard');
-        return;
-      }
-    }
+  const handleSignIn = async () => {
+     try {
+        const res = await fetch('/users.json');
+        if (!res.ok) throw new Error("Failed to fetch users");
+        const users: User[] = await res.json();
 
-    // For this prototype, any other login on this page is treated as a writer.
-    const user = users.find(u => u.username === username);
-    if (user && user.isAdmin) {
-        localStorage.setItem('userId', user.id);
-        localStorage.setItem('userRole', 'writer');
-        localStorage.setItem('userName', user.name);
-        localStorage.setItem('userUsername', user.username);
-        document.cookie = `userId=${user.id}; path=/; max-age=604800`;
-        router.push('/admin/dashboard');
-    } else {
+        // Super Admin check
+        if (username.toLowerCase() === 'nafadmin' && password === 'nafstud') {
+            const adminUser = users.find(u => u.username === 'nafadmin');
+            if (adminUser) {
+                localStorage.setItem('userId', adminUser.id);
+                localStorage.setItem('userRole', 'super-admin');
+                localStorage.setItem('userName', adminUser.name);
+                localStorage.setItem('userUsername', adminUser.username);
+                document.cookie = `userId=${adminUser.id}; path=/; max-age=604800`;
+                router.push('/admin/dashboard');
+                return;
+            }
+        }
+
+        const user = users.find(u => u.username === username);
+        if (user && user.isAdmin) {
+            localStorage.setItem('userId', user.id);
+            localStorage.setItem('userRole', 'writer');
+            localStorage.setItem('userName', user.name);
+            localStorage.setItem('userUsername', user.username);
+            document.cookie = `userId=${user.id}; path=/; max-age=604800`;
+            router.push('/admin/dashboard');
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Login Failed",
+                description: "Invalid username or password for a writer account.",
+            });
+        }
+    } catch (error) {
         toast({
             variant: "destructive",
-            title: "Login Failed",
-            description: "Invalid username or password for a writer account.",
-        });
+            title: "Login Error",
+            description: "Could not retrieve user data. Please try again.",
+        })
     }
   };
 

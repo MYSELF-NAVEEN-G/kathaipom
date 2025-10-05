@@ -15,7 +15,7 @@ import { Logo } from "@/components/logo";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
-import { users } from "@/lib/users"; // Import mock data safely
+import type { User } from "@/lib/types";
 
 
 export default function LoginPage() {
@@ -24,24 +24,35 @@ export default function LoginPage() {
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     // In a real app, you'd have actual auth logic here.
-    // For now, we find a user by username from mock data.
-    const user = users.find(u => u.username === username);
+    // For now, we find a user by username from the fetched data.
+    try {
+        const res = await fetch('/users.json');
+        if (!res.ok) throw new Error("Failed to fetch users");
+        const users: User[] = await res.json();
+        const user = users.find(u => u.username === username);
 
-    if (user && !user.isAdmin) {
-      localStorage.setItem('userId', user.id);
-      localStorage.setItem('userRole', 'user');
-      localStorage.setItem('userName', user.name);
-      localStorage.setItem('userUsername', user.username);
-      document.cookie = `userId=${user.id}; path=/; max-age=604800`;
-      router.push('/feed');
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid username, password, or you might be a writer.",
-      })
+        if (user && !user.isAdmin) {
+          localStorage.setItem('userId', user.id);
+          localStorage.setItem('userRole', 'user');
+          localStorage.setItem('userName', user.name);
+          localStorage.setItem('userUsername', user.username);
+          document.cookie = `userId=${user.id}; path=/; max-age=604800`;
+          router.push('/feed');
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: "Invalid username, password, or you might be a writer.",
+          })
+        }
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Login Error",
+            description: "Could not retrieve user data. Please try again.",
+        })
     }
   };
 
