@@ -51,6 +51,10 @@ export default function SignupPage() {
         localStorage.setItem('userName', newUser.name);
         localStorage.setItem('userUsername', newUser.username);
         document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
+        
+        // Dispatch custom event to trigger auth hook
+        window.dispatchEvent(new Event('login'));
+        
         router.push('/feed');
     }
 

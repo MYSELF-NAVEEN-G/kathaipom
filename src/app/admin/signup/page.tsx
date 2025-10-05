@@ -51,6 +51,7 @@ export default function WriterSignupPage() {
         localStorage.setItem('userName', newUser.name);
         localStorage.setItem('userUsername', newUser.username);
         document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
+        window.dispatchEvent(new Event('login'));
         router.push('/admin/dashboard');
     }
 

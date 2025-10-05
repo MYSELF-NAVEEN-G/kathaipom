@@ -39,6 +39,10 @@ export default function LoginPage() {
           localStorage.setItem('userName', user.name);
           localStorage.setItem('userUsername', user.username);
           document.cookie = `userId=${user.id}; path=/; max-age=604800`;
+          
+          // Dispatch a custom event to notify other components (like the sidebar)
+          window.dispatchEvent(new Event('login'));
+
           router.push('/feed');
         } else {
           toast({
