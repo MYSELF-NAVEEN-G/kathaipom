@@ -16,7 +16,6 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
 import { users } from "@/lib/users"; // Import mock data safely
-import { setCookie } from 'cookies-next';
 
 
 export default function LoginPage() {

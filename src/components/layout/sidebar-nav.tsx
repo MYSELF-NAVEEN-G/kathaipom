@@ -26,7 +26,7 @@ import { Logo } from '@/components/logo';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { getUserById } from '@/lib/data';
+import { useAuth } from '@/hooks/use-auth';
 import type { User } from '@/lib/types';
 
 
@@ -43,31 +43,23 @@ type UserData = {
 export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user: authUser } = useAuth();
   const [currentUser, setCurrentUser] = React.useState<UserData | null>(null);
 
   React.useEffect(() => {
-    const fetchUser = async () => {
-        const userId = localStorage.getItem('userId');
-        if (userId) {
-            const user: User | undefined = await getUserById(userId);
-            if (user) {
-                const userRole = localStorage.getItem('userRole') as UserRole;
-                setCurrentUser({
-                    id: user.id,
-                    name: user.name,
-                    username: user.username,
-                    avatarUrl: user.avatar.imageUrl,
-                    role: userRole,
-                });
-            } else {
-                 handleLogout(false);
-            }
-        } else {
-            setCurrentUser(null);
-        }
-    };
-    fetchUser();
-  }, [pathname]); // Rerun on path change to reflect login/logout
+    const userRole = localStorage.getItem('userRole') as UserRole;
+    if (authUser) {
+      setCurrentUser({
+        id: authUser.id,
+        name: authUser.name,
+        username: authUser.username,
+        avatarUrl: authUser.avatar.imageUrl,
+        role: userRole,
+      });
+    } else {
+        setCurrentUser(null);
+    }
+  }, [authUser, pathname]); // Rerun on authUser or path change
 
   const userMenuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
@@ -93,8 +85,12 @@ export function SidebarNav() {
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
     localStorage.removeItem('userUsername');
+    // Also clear the session cookie
+    document.cookie = 'userId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     setCurrentUser(null);
     if (redirect) router.push('/');
+    // Force a reload to clear all state
+    window.location.href = '/';
   }
 
   if (!currentUser) {

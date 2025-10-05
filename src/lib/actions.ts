@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Story, Comment } from './types';
+import type { Story, Comment, User } from './types';
 import { getPosts, writePostsToFile, getUsers, writeUsersToFile, getUserById } from './data';
 import { auth } from './auth';
 
@@ -155,4 +155,15 @@ export async function unfollowUser(followingId: string) {
         revalidatePath(`/profile/${users[userToUnfollowIndex].username}`);
         revalidatePath(`/profile/${users[followerIndex].username}`);
     }
+}
+
+export async function addUser(user: Omit<User, 'id'>): Promise<User> {
+    const users = await getUsers();
+    const newUser: User = {
+        ...user,
+        id: `user-${Date.now()}`
+    };
+    const updatedUsers = [...users, newUser];
+    await writeUsersToFile(updatedUsers);
+    return newUser;
 }

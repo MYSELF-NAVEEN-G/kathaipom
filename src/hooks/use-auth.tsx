@@ -1,23 +1,56 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getUserById } from '@/lib/data';
 import type { User } from '@/lib/types';
+
+declare global {
+  interface Window {
+    __api_route_setup?: boolean;
+  }
+}
+
+async function setupApi() {
+    if (typeof window !== 'undefined' && window.__api_route_setup) {
+        return;
+    }
+
+    const { setupWorker, http } = await import('msw/browser');
+    const { getUsers } = await import('@/lib/data');
+
+    const worker = setupWorker(
+        http.get('/api/users', async () => {
+            const users = await getUsers();
+            return new Response(JSON.stringify(users), {
+                headers: { 'Content-Type': 'application/json' }
+            })
+        })
+    );
+
+    await worker.start({
+        onUnhandledRequest: 'bypass',
+        quiet: true,
+    });
+    
+    if (typeof window !== 'undefined') {
+        window.__api_route_setup = true;
+    }
+}
+
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const initializeAuth = async () => {
+      await setupApi();
+      
       const userId = localStorage.getItem('userId');
       if (userId) {
         try {
-          // Since getUserById is a server action, we can't call it directly.
-          // In a real app, this would be an API call.
-          // For this prototype, we'll fetch all users and find the one we need.
-          // This is inefficient but works for a mock setup.
           const res = await fetch('/api/users');
-          const allUsers = await res.json();
+          if (!res.ok) throw new Error('Failed to fetch');
+          const allUsers: User[] = await res.json();
           const currentUser = allUsers.find((u: User) => u.id === userId);
           setUser(currentUser || null);
         } catch (error) {
@@ -27,28 +60,13 @@ export function useAuth() {
       } else {
         setUser(null);
       }
+      setIsLoading(false);
     };
     
-    // Create a dummy API route to serve users
-    const createApiRoute = async () => {
-        const existingRoute = await fetch('/api/users').catch(() => null);
-        if (!existingRoute) {
-            const { setup } = await import('@/lib/api-route-setup');
-            setup();
-        }
-    }
+    initializeAuth();
 
-    // This is a temporary setup to make the prototype work without a full API.
-    const initialize = async () => {
-        await createApiRoute();
-        fetchUser();
-    };
-    
-    initialize();
-
-    // Listen for changes in localStorage
     const handleStorageChange = () => {
-        initialize();
+        initializeAuth();
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -58,13 +76,5 @@ export function useAuth() {
 
   }, []);
 
-  return { user };
-}
-
-// This is a trick to create a dummy API route in a prototype environment
-// In a real application, you would define this in your api folder.
-declare global {
-  interface Window {
-    __api_route_setup: boolean;
-  }
+  return { user, isLoading };
 }

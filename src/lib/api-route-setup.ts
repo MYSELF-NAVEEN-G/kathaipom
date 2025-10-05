@@ -35,6 +35,6 @@ export async function setup() {
     });
     
     if (typeof window !== 'undefined') {
-        window.__api_route_setup = true;
+        (window as any).__api_route_setup = true;
     }
 }

@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { addUser } from "@/lib/data";
+import { addUser } from "@/lib/actions";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { useToast } from "@/hooks/use-toast";
 

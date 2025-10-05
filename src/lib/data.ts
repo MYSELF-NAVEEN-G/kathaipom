@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 import path from 'path';
 import { users as mockUsers } from './users';
 import type { User, Story, EnrichedStory } from './types';
@@ -104,15 +104,4 @@ export async function getPostsByUsername(username: string): Promise<EnrichedStor
 export async function getLikedPostsByUserId(userId: string): Promise<EnrichedStory[]> {
     const allPosts = await getPosts();
     return allPosts.filter(p => p.likedBy && p.likedBy.includes(userId));
-}
-
-export async function addUser(user: Omit<User, 'id'>): Promise<User> {
-    const users = await getUsers();
-    const newUser: User = {
-        ...user,
-        id: `user-${Date.now()}`
-    };
-    const updatedUsers = [...users, newUser];
-    await writeUsersToFile(updatedUsers);
-    return newUser;
 }

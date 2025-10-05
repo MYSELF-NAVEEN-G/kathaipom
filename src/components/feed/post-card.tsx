@@ -16,24 +16,11 @@ import React from "react";
 import { addComment } from "@/lib/actions";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { getUserById } from "@/lib/data";
+import { useAuth } from "@/hooks/use-auth";
+
 
 function CommentForm({ postId }: { postId: string }) {
-    const [currentUser, setCurrentUser] = React.useState<{id: string, name: string} | null>(null);
-
-    React.useEffect(() => {
-        const userId = localStorage.getItem('userId');
-        const fetchUser = async () => {
-            if (userId) {
-                const user = await getUserById(userId);
-                if (user) {
-                    setCurrentUser({ id: user.id, name: user.name });
-                }
-            }
-        }
-        fetchUser();
-    }, []);
-
+    const { user: currentUser } = useAuth();
     const formRef = React.useRef<HTMLFormElement>(null);
 
     const handleCommentSubmit = async (formData: FormData) => {
@@ -67,13 +54,15 @@ export function PostCard({ post: story }: { post: Story & { reason?: string } })
   
   React.useEffect(() => {
       const fetchAuthor = async () => {
-        const user = await getUserById(story.authorId);
-        if (user) {
-            setAuthor(user);
+        // This simulates fetching the author details. In a real app this would be an API call.
+        // For the prototype, we can assume the enriched story object from getPosts already has what we need
+        // but we'll leave this here to mimic a real-world scenario where you might fetch extra details.
+        if (story.author) {
+            setAuthor(story.author as User);
         }
       }
       fetchAuthor();
-  }, [story.authorId]);
+  }, [story.author]);
 
 
   const firstPageContent = Array.isArray(story.content) ? story.content[0] : story.content;
