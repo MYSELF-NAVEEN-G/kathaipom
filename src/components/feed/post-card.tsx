@@ -8,7 +8,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Info, Send } from "lucide-react";
-import type { EnrichedPost, Post } from "@/lib/types";
+import type { EnrichedStory, Story } from "@/lib/types";
 import { PostActions } from "./post-actions";
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -43,29 +43,29 @@ function CommentForm({ postId }: { postId: string }) {
     );
 }
 
-export function PostCard({ post }: { post: Post & { reason?: string } }) {
-  const avatarUrl = `https://picsum.photos/seed/${post.authorUsername}/100/100`;
+export function PostCard({ post: story }: { post: Story & { reason?: string } }) {
+  const avatarUrl = `https://picsum.photos/seed/${story.authorUsername}/100/100`;
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 duration-300 ease-in-out flex flex-col">
       <CardHeader className="flex flex-row items-center gap-3 p-4">
         <Avatar>
-          <AvatarImage src={avatarUrl} alt={post.authorName} />
-          <AvatarFallback>{post.authorName.charAt(0)}</AvatarFallback>
+          <AvatarImage src={avatarUrl} alt={story.authorName} />
+          <AvatarFallback>{story.authorName.charAt(0)}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <p className="font-semibold text-sm">{post.authorName}</p>
-          <p className="text-xs text-muted-foreground">@{post.authorUsername}</p>
+          <p className="font-semibold text-sm">{story.authorName}</p>
+          <p className="text-xs text-muted-foreground">@{story.authorUsername}</p>
         </div>
         <div className="flex items-center gap-1">
-            {post.reason && (
+            {story.reason && (
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p className="max-w-xs">{post.reason}</p>
+                            <p className="max-w-xs">{story.reason}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -77,32 +77,32 @@ export function PostCard({ post }: { post: Post & { reason?: string } }) {
 
       </CardHeader>
       <CardContent className="p-0 flex-1">
-        {post.image && (
+        {story.image && (
             <div className="relative aspect-[4/5] w-full">
             <Image
-                src={post.image.imageUrl}
-                alt={post.image.description}
+                src={story.image.imageUrl}
+                alt={story.image.description}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                data-ai-hint={post.image.imageHint}
+                data-ai-hint={story.image.imageHint}
             />
             </div>
         )}
         <div className="p-4 text-sm">
-            <p className="line-clamp-2">{post.content}</p>
+            <p className="line-clamp-2">{story.content}</p>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start p-0 mt-auto">
-        <PostActions postId={post.id} initialLikes={post.likes} commentsCount={post.comments?.length || 0} imageUrl={post.image?.imageUrl} />
+        <PostActions postId={story.id} initialLikes={story.likes} commentsCount={story.comments?.length || 0} imageUrl={story.image?.imageUrl} />
         <p className="px-4 pb-2 pt-1 text-xs text-muted-foreground">
-          {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
+          {formatDistanceToNow(new Date(story.timestamp), { addSuffix: true })}
         </p>
-        {post.comments && post.comments.length > 0 && (
+        {story.comments && story.comments.length > 0 && (
             <div className="w-full px-4 pb-2 text-sm">
                 <Separator className="my-2" />
                 <div className="space-y-2 max-h-24 overflow-y-auto">
-                {post.comments.map(comment => (
+                {story.comments.map(comment => (
                     <div key={comment.id}>
                         <span className="font-semibold">{comment.authorName}</span>
                         <p className="text-muted-foreground d-inline">{comment.content}</p>
@@ -112,7 +112,7 @@ export function PostCard({ post }: { post: Post & { reason?: string } }) {
             </div>
         )}
         <Separator />
-        <CommentForm postId={post.id} />
+        <CommentForm postId={story.id} />
       </CardFooter>
     </Card>
   );

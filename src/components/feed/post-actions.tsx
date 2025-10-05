@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { likePost } from "@/lib/actions";
+import { likeStory } from "@/lib/actions";
 
 export function PostActions({
   postId,
@@ -27,7 +27,7 @@ export function PostActions({
     setIsLiked(true);
     setLikes((prev) => prev + 1);
     startTransition(() => {
-      likePost(postId);
+      likeStory(postId);
     });
   };
 
@@ -50,7 +50,7 @@ export function PostActions({
           size="icon"
           onClick={handleLike}
           disabled={isLiked || isPending}
-          aria-label={isLiked ? "Unlike post" : "Like post"}
+          aria-label={isLiked ? "Unlike story" : "Like story"}
         >
           <Heart
             className={cn(
@@ -59,10 +59,10 @@ export function PostActions({
             )}
           />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Comment on post">
+        <Button variant="ghost" size="icon" aria-label="Comment on story">
           <MessageCircle className="h-5 w-5 text-foreground/70" />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Share post">
+        <Button variant="ghost" size="icon" aria-label="Share story">
           <Share2 className="h-5 w-5 text-foreground/70" />
         </Button>
       </div>
@@ -72,7 +72,7 @@ export function PostActions({
                 variant="ghost"
                 size="icon"
                 onClick={handleDownload}
-                aria-label="Download post image"
+                aria-label="Download story image"
             >
                 <Download className="h-5 w-5 text-foreground/70" />
             </Button>

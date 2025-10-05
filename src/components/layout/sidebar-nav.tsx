@@ -111,7 +111,7 @@ export function SidebarNav() {
            <Button asChild className="w-full mb-4" size="lg">
              <Link href="/admin/dashboard">
                <PlusSquare className="mr-2 h-5 w-5" />
-               Create Post
+               Write Story
              </Link>
            </Button>
         )}

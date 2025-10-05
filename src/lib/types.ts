@@ -18,7 +18,7 @@ export type Comment = {
   timestamp: string;
 };
 
-export type Post = {
+export type Story = {
   id:string;
   authorId: string;
   authorName: string;
@@ -30,7 +30,7 @@ export type Post = {
   timestamp: string;
 };
 
-export type EnrichedPost = Omit<Post, 'authorId'> & {
+export type EnrichedStory = Omit<Story, 'authorId'> & {
   author: User;
   priorityScore?: number;
   reason?: string;

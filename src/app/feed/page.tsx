@@ -7,7 +7,7 @@ import {
   type PrioritizeFeedInput,
   type PrioritizeFeedOutput,
 } from "@/ai/flows/intelligent-feed-prioritization";
-import type { Post } from "@/lib/types";
+import type { Story } from "@/lib/types";
 import { Suspense } from "react";
 
 export default async function FeedPage() {
@@ -68,9 +68,9 @@ export default async function FeedPage() {
     ])
   );
 
-  type PostWithReason = Post & { reason?: string, priorityScore?: number };
+  type StoryWithReason = Story & { reason?: string, priorityScore?: number };
 
-  const sortedPosts: PostWithReason[] = posts
+  const sortedStories: StoryWithReason[] = posts
     .map((post) => {
       const priority = priorityMap.get(post.id);
       return {
@@ -91,17 +91,17 @@ export default async function FeedPage() {
   return (
     <main>
       <AppLayout>
-        <Suspense fallback={<div className="p-6">Loading feed...</div>}>
-          {sortedPosts.length > 0 ? (
-            <FeedDisplay posts={sortedPosts} />
+        <Suspense fallback={<div className="p-6">Loading stories...</div>}>
+          {sortedStories.length > 0 ? (
+            <FeedDisplay stories={sortedStories} />
           ) : (
             <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] text-center p-6">
               <h2 className="text-2xl font-headline font-bold mb-2">
                 Your Feed is Empty
               </h2>
               <p className="text-muted-foreground mb-6 max-w-sm">
-                It looks like there are no posts to show right now. Admins can
-                start by creating a new post.
+                It looks like there are no stories to show right now. Admins can
+                start by creating a new story.
               </p>
             </div>
           )}

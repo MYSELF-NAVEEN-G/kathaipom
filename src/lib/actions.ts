@@ -1,39 +1,38 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Post } from './types';
+import type { Story } from './types';
 import { getPosts, writePostsToFile } from './data';
-import { PlaceHolderImages } from './placeholder-images';
 
-export async function addPost(postData: {
+export async function addStory(storyData: {
   content: string;
   authorId: string;
   authorName: string;
   authorUsername: string;
 }) {
-  const posts = await getPosts();
+  const stories = await getPosts();
 
-  const newPost: Post = {
+  const newStory: Story = {
     id: `post-${Date.now()}`,
-    authorId: postData.authorId,
-    authorName: postData.authorName,
-    authorUsername: postData.authorUsername,
-    content: postData.content,
+    authorId: storyData.authorId,
+    authorName: storyData.authorName,
+    authorUsername: storyData.authorUsername,
+    content: storyData.content,
     likes: 0,
     comments: [],
     timestamp: new Date().toISOString(),
   };
 
-  const updatedPosts = [newPost, ...posts];
-  await writePostsToFile(updatedPosts);
+  const updatedStories = [newStory, ...stories];
+  await writePostsToFile(updatedStories);
 
-  // Revalidate the feed path to show the new post
+  // Revalidate the feed path to show the new story
   revalidatePath('/feed');
 
-  return newPost;
+  return newStory;
 }
 
-export async function likePost(postId: string) {
+export async function likeStory(postId: string) {
     const posts = await getPosts();
     const postIndex = posts.findIndex(p => p.id === postId);
 

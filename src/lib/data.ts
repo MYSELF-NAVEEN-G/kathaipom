@@ -1,5 +1,5 @@
 import { PlaceHolderImages } from "./placeholder-images";
-import type { User, Post, Comment } from "./types";
+import type { User, Story, Comment } from "./types";
 import fs from 'fs';
 import path from 'path';
 
@@ -38,7 +38,7 @@ let comments: Comment[] = []
 
 const postsFilePath = path.join(process.cwd(), 'src', 'lib', 'posts.json');
 
-function readPostsFromFile(): Post[] {
+function readPostsFromFile(): Story[] {
   try {
     const data = fs.readFileSync(postsFilePath, 'utf-8');
     return JSON.parse(data);
@@ -51,7 +51,7 @@ function readPostsFromFile(): Post[] {
   }
 }
 
-export function writePostsToFile(posts: Post[]) {
+export function writePostsToFile(posts: Story[]) {
   fs.writeFileSync(postsFilePath, JSON.stringify(posts, null, 2), 'utf-8');
 }
 
@@ -62,7 +62,7 @@ export async function getUsers(): Promise<User[]> {
   return Promise.resolve(users);
 }
 
-export async function getPosts(): Promise<Post[]> {
+export async function getPosts(): Promise<Story[]> {
   return Promise.resolve(readPostsFromFile());
 }
 

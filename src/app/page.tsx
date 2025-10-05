@@ -13,34 +13,34 @@ export default function LandingPage() {
       <div className="text-center mb-12">
         <h1 className="text-5xl font-headline font-bold tracking-tight mb-4">Welcome to Kathaipom</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            A premium social experience. Connect, share, and discover content tailored just for you.
+            Share your stories. Connect with readers and writers. Discover content tailored just for you.
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
         <Card className="hover:shadow-lg transition-shadow duration-300">
           <CardHeader>
-            <CardTitle className="text-2xl font-headline">I am an Admin</CardTitle>
-            <CardDescription>Manage content and users.</CardDescription>
+            <CardTitle className="text-2xl font-headline">I am a Writer</CardTitle>
+            <CardDescription>Manage your stories and audience.</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="mb-6">Access the admin dashboard to create new posts, moderate content, and view analytics.</p>
+            <p className="mb-6">Access the writer dashboard to publish new stories, manage your content, and view analytics.</p>
             <Button asChild className="w-full">
               <Link href="/admin/login">
-                Proceed to Admin Login <ArrowRight className="ml-2" />
+                Proceed to Writer Login <ArrowRight className="ml-2" />
               </Link>
             </Button>
           </CardContent>
         </Card>
         <Card className="hover:shadow-lg transition-shadow duration-300">
           <CardHeader>
-            <CardTitle className="text-2xl font-headline">I am a User</CardTitle>
-            <CardDescription>Explore the social feed.</CardDescription>
+            <CardTitle className="text-2xl font-headline">I am a Reader</CardTitle>
+            <CardDescription>Explore the story feed.</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="mb-6">Sign in to view your personalized feed, like, comment on, and share posts from creators you love.</p>
+            <p className="mb-6">Sign in to view your personalized feed, like, comment on, and share stories from creators you love.</p>
             <Button asChild className="w-full">
               <Link href="/login">
-                Proceed to User Login <ArrowRight className="ml-2" />
+                Proceed to Reader Login <ArrowRight className="ml-2" />
               </Link>
             </Button>
           </CardContent>
