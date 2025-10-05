@@ -50,6 +50,7 @@ export default function SignupPage() {
         localStorage.setItem('userRole', 'user');
         localStorage.setItem('userName', newUser.name);
         localStorage.setItem('userUsername', newUser.username);
+        document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
         router.push('/feed');
     }
 

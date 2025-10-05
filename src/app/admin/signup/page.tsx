@@ -50,6 +50,7 @@ export default function WriterSignupPage() {
         localStorage.setItem('userRole', 'writer');
         localStorage.setItem('userName', newUser.name);
         localStorage.setItem('userUsername', newUser.username);
+        document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
         router.push('/admin/dashboard');
     }
 
@@ -72,8 +73,7 @@ export default function WriterSignupPage() {
               <Input id="name" placeholder="Your Name" required value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
-              <Input id="username" placeholder="your_username" required value={username} onChange={(e) => setUsername(e.target.value)} />
+              <Label htmlFor="username">Username</Label>              <Input id="username" placeholder="your_username" required value={username} onChange={(e) => setUsername(e.target.value)} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>

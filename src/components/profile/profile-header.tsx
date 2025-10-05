@@ -26,7 +26,7 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
     const isOwnProfile = currentUser?.id === user.id;
 
     const isFollowing = React.useMemo(() => {
-        if (!currentUser) return false;
+        if (!currentUser || !user.followers) return false;
         return user.followers.includes(currentUser.id);
     }, [user.followers, currentUser]);
 
@@ -34,9 +34,9 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
         if (!currentUser) return;
         startTransition(() => {
             if (isFollowing) {
-                unfollowUser(currentUser.id, user.id);
+                unfollowUser(user.id);
             } else {
-                followUser(currentUser.id, user.id);
+                followUser(user.id);
             }
         });
     };

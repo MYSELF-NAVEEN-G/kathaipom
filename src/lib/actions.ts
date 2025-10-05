@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import type { Story, Comment } from './types';
-import { getPosts, writePostsToFile, getUsers, writeUsersToFile } from './data';
+import { getPosts, writePostsToFile, getUsers, writeUsersToFile, getUserById } from './data';
 import { auth } from './auth';
 
 export async function addStory(storyData: {
@@ -93,6 +93,11 @@ export async function addComment(formData: FormData) {
 }
 
 export async function deleteStory(postId: string) {
+    const { user } = await auth();
+    if (!user || user.username !== 'nafadmin') {
+      throw new Error('Permission denied');
+    }
+
     const posts = await getPosts();
     const postToDelete = posts.find(p => p.id === postId);
 
@@ -109,17 +114,24 @@ export async function deleteStory(postId: string) {
     }
 }
 
-export async function followUser(followerId: string, followingId: string) {
-    const users = await getUsers();
-    const follower = users.find(u => u.id === followerId);
-    const userToFollow = users.find(u => u.id === followingId);
+export async function followUser(followingId: string) {
+    const { user: follower } = await auth();
+    if (!follower) return;
 
-    if (follower && userToFollow) {
+    const users = await getUsers();
+    
+    const followerIndex = users.findIndex(u => u.id === follower.id);
+    const userToFollowIndex = users.findIndex(u => u.id === followingId);
+
+    if (followerIndex !== -1 && userToFollowIndex !== -1) {
+        const follower = users[followerIndex];
+        const userToFollow = users[userToFollowIndex];
+
         if (!follower.following.includes(followingId)) {
             follower.following.push(followingId);
         }
-        if (!userToFollow.followers.includes(followerId)) {
-            userToFollow.followers.push(followerId);
+        if (!userToFollow.followers.includes(follower.id)) {
+            userToFollow.followers.push(follower.id);
         }
         await writeUsersToFile(users);
         revalidatePath(`/profile/${userToFollow.username}`);
@@ -127,14 +139,17 @@ export async function followUser(followerId: string, followingId: string) {
     }
 }
 
-export async function unfollowUser(followerId: string, followingId: string) {
+export async function unfollowUser(followingId: string) {
+    const { user: follower } = await auth();
+    if (!follower) return;
+
     const users = await getUsers();
-    const followerIndex = users.findIndex(u => u.id === followerId);
+    const followerIndex = users.findIndex(u => u.id === follower.id);
     const userToUnfollowIndex = users.findIndex(u => u.id === followingId);
 
     if (followerIndex > -1 && userToUnfollowIndex > -1) {
         users[followerIndex].following = users[followerIndex].following.filter(id => id !== followingId);
-        users[userToUnfollowIndex].followers = users[userToUnfollowIndex].followers.filter(id => id !== followerId);
+        users[userToUnfollowIndex].followers = users[userToUnfollowIndex].followers.filter(id => id !== follower.id);
         
         await writeUsersToFile(users);
         revalidatePath(`/profile/${users[userToUnfollowIndex].username}`);

@@ -16,6 +16,8 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
 import { users } from "@/lib/users"; // Import mock data safely
+import { setCookie } from 'cookies-next';
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,6 +35,7 @@ export default function LoginPage() {
       localStorage.setItem('userRole', 'user');
       localStorage.setItem('userName', user.name);
       localStorage.setItem('userUsername', user.username);
+      document.cookie = `userId=${user.id}; path=/; max-age=604800`;
       router.push('/feed');
     } else {
       toast({

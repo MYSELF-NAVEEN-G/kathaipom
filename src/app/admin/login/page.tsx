@@ -32,6 +32,7 @@ export default function AdminLoginPage() {
         localStorage.setItem('userRole', 'super-admin');
         localStorage.setItem('userName', adminUser.name);
         localStorage.setItem('userUsername', adminUser.username);
+        document.cookie = `userId=${adminUser.id}; path=/; max-age=604800`;
         router.push('/admin/dashboard');
         return;
       }
@@ -44,6 +45,7 @@ export default function AdminLoginPage() {
         localStorage.setItem('userRole', 'writer');
         localStorage.setItem('userName', user.name);
         localStorage.setItem('userUsername', user.username);
+        document.cookie = `userId=${user.id}; path=/; max-age=604800`;
         router.push('/admin/dashboard');
     } else {
         toast({
