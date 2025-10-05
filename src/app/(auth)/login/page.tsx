@@ -48,6 +48,7 @@ export default function LoginPage() {
           })
         }
     } catch (error) {
+        console.error(error);
         toast({
             variant: "destructive",
             title: "Login Error",
