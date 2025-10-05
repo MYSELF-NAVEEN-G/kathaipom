@@ -19,7 +19,8 @@ export default function SignupPage() {
 
     const handleSignUp = () => {
         // In a real app, you'd have actual sign up logic here.
-        // For now, we'll just redirect to the feed.
+        // For this prototype, we'll simulate a user signup.
+        localStorage.setItem('userRole', 'user');
         router.push('/feed');
     }
 

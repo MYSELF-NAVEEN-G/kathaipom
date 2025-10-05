@@ -19,7 +19,8 @@ export default function LoginPage() {
 
   const handleSignIn = () => {
     // In a real app, you'd have actual auth logic here.
-    // For now, we'll just redirect to the feed.
+    // For this prototype, we'll simulate a user login.
+    localStorage.setItem('userRole', 'user');
     router.push('/feed');
   };
 

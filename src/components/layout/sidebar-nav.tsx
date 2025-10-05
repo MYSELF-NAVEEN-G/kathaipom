@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 import {
   Home,
   Search,
@@ -24,25 +25,45 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-// Mock current user data - in a real app this would come from an auth context
-const currentUser = {
+type UserData = {
+  name: string;
+  username: string;
+  avatar: string;
+  isAdmin: boolean;
+};
+
+const adminUser: UserData = {
   name: 'Admin User',
   username: 'admin',
   avatar: 'https://picsum.photos/seed/avatar1/100/100',
-  isAdmin: true, // This flag determines if the user is an admin
+  isAdmin: true,
 };
 
-// To test a regular user view, you could swap the above with this:
-// const currentUser = {
-//   name: 'Jane Doe',
-//   username: 'janedoe',
-//   avatar: 'https://picsum.photos/seed/avatar2/100/100',
-//   isAdmin: false,
-// };
+const regularUser: UserData = {
+  name: 'Jane Doe',
+  username: 'janedoe',
+  avatar: 'https://picsum.photos/seed/avatar2/100/100',
+  isAdmin: false,
+};
+
 
 export function SidebarNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const [currentUser, setCurrentUser] = React.useState<UserData | null>(null);
+
+  React.useEffect(() => {
+    // On component mount, check localStorage to set the user role
+    const userRole = localStorage.getItem('userRole');
+    if (userRole === 'admin') {
+      setCurrentUser(adminUser);
+    } else if (userRole === 'user') {
+      setCurrentUser(regularUser);
+    } else {
+      // If no role, default to user or redirect to login
+      setCurrentUser(regularUser);
+    }
+  }, []);
 
   const userMenuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
@@ -55,11 +76,17 @@ export function SidebarNav() {
     { href: '/feed', label: 'Feed Preview', icon: Home },
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ];
+  
+  if (!currentUser) {
+    // You can render a loading state or skeleton here
+    return null; 
+  }
 
   const menuItems = currentUser.isAdmin ? adminMenuItems : userMenuItems;
 
   const handleLogout = () => {
-    // In a real app, you would have a proper logout flow
+    // Clear the role from localStorage on logout
+    localStorage.removeItem('userRole');
     router.push('/');
   }
 

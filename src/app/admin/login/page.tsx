@@ -26,8 +26,12 @@ export default function AdminLoginPage() {
       (adminId === 'nafadmin' && password === 'naveen') ||
       (adminId === 'jed' && password === 'admins123')
     ) {
+      // Set role in localStorage for admin
+      localStorage.setItem('userRole', 'admin');
       router.push('/admin/dashboard');
     } else {
+      // On failure, clear role and redirect to user login
+      localStorage.removeItem('userRole');
       router.push('/login');
     }
   };
