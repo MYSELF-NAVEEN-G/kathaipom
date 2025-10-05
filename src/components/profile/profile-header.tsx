@@ -13,7 +13,7 @@ import { useAuth } from '@/hooks/use-auth';
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="text-center">
-      <p className="font-bold text-lg">{value.toLocaleString()}</p>
+      <p className="font-bold text-lg md:text-lg">{value.toLocaleString()}</p>
       <p className="text-sm text-muted-foreground">{label}</p>
     </div>
   );
@@ -43,7 +43,7 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
 
     return (
         <div className="relative">
-            <div className="h-48 md:h-64 w-full relative">
+            <div className="h-24 md:h-64 w-full relative">
                  <Image
                     src={user.coverImage.imageUrl}
                     alt={`${user.name}'s cover image`}
@@ -55,7 +55,8 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
                 <div className="absolute inset-0 bg-black/30" />
             </div>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative -mt-16 md:-mt-24 flex flex-col items-center md:items-end md:flex-row md:justify-between">
+                {/* Desktop layout */}
+                <div className="relative -mt-16 md:-mt-24 hidden md:flex flex-col items-center md:items-end md:flex-row md:justify-between">
                      <div className="flex flex-col md:flex-row items-center gap-4">
                         <Avatar className="h-32 w-32 border-4 border-background">
                             <AvatarImage src={user.avatar.imageUrl} alt={user.name} />
@@ -94,7 +95,48 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
                         )}
                     </div>
                 </div>
-                 <div className="mt-6 text-center md:text-left max-w-2xl mx-auto md:mx-0">
+
+                 {/* Mobile layout */}
+                <div className="md:hidden -mt-12 relative">
+                    <div className="flex items-center justify-between">
+                        <Avatar className="h-20 w-20 border-4 border-background">
+                            <AvatarImage src={user.avatar.imageUrl} alt={user.name} />
+                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex items-center gap-4">
+                            <Stat label="Posts" value={postsCount} />
+                            <Stat label="Followers" value={user.followers.length} />
+                            <Stat label="Following" value={user.following.length} />
+                        </div>
+                    </div>
+                    <div className="mt-4">
+                        <h1 className="text-lg font-headline font-bold">{user.name}</h1>
+                        <p className="text-sm text-muted-foreground">@{user.username}</p>
+                        <p className="text-foreground/90 text-sm mt-2">{user.bio}</p>
+                    </div>
+                     <div className="mt-4 flex gap-2">
+                        {currentUser && !isOwnProfile && (
+                            <Button onClick={handleFollowToggle} disabled={isPending} variant={isFollowing ? 'secondary' : 'default'} className="flex-1">
+                                {isFollowing ? <UserCheck className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />}
+                                {isFollowing ? 'Following' : 'Follow'}
+                            </Button>
+                        )}
+                        {currentUser && isOwnProfile && (
+                            <>
+                                <Button variant="outline" size="sm" className="flex-1">
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit Profile
+                                </Button>
+                                 <Button variant="outline" size="sm" className="flex-1">
+                                    <ImageIcon className="mr-2 h-4 w-4" />
+                                    Edit Cover
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                 <div className="mt-6 text-center md:text-left max-w-2xl mx-auto md:mx-0 hidden md:block">
                     <p className="text-foreground/90">{user.bio}</p>
                 </div>
             </div>
