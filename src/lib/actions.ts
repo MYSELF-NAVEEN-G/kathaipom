@@ -167,3 +167,42 @@ export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     await writeUsersToFile(updatedUsers);
     return newUser;
 }
+
+export async function updateUser(userId: string, data: Partial<Pick<User, 'name' | 'username' | 'bio'>>) {
+    const { user } = await auth();
+    if (!user || user.id !== userId) {
+        throw new Error('Permission denied');
+    }
+
+    const users = await getUsers();
+    const userIndex = users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+        throw new Error('User not found');
+    }
+
+    const originalUsername = users[userIndex].username;
+    
+    // Check for username conflict
+    if (data.username && data.username !== originalUsername) {
+        const existingUser = users.find(u => u.username === data.username);
+        if (existingUser) {
+            throw new Error('Username is already taken.');
+        }
+    }
+
+    users[userIndex] = {
+        ...users[userIndex],
+        ...data,
+    };
+
+    await writeUsersToFile(users);
+
+    // Revalidate the old path if username changed
+    if (data.username && data.username !== originalUsername) {
+        revalidatePath(`/profile/${originalUsername}`);
+    }
+    // Revalidate the new/current path
+    revalidatePath(`/profile/${users[userIndex].username}`);
+    revalidatePath('/feed'); // In case author names changed on posts
+}

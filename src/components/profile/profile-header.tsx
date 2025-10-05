@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useTransition } from 'react';
+import React, { useTransition, useState } from 'react';
 import type { User } from '@/lib/types';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { UserPlus, UserCheck, Edit, Image as ImageIcon, FileText } from 'lucide-react';
 import { followUser, unfollowUser } from '@/lib/actions';
 import { useAuth } from '@/hooks/use-auth';
+import { EditProfileDialog } from './edit-profile-dialog';
 
 
 function Stat({ label, value }: { label: string; value: number }) {
@@ -22,6 +23,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 export function ProfileHeader({ user, postsCount }: { user: User, postsCount: number }) {
     const [isPending, startTransition] = useTransition();
     const { user: currentUser } = useAuth();
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
     const isOwnProfile = currentUser?.id === user.id;
 
@@ -42,6 +44,7 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
     };
 
     return (
+        <>
         <div className="relative">
             <div className="h-24 md:h-64 w-full relative">
                  <Image
@@ -78,20 +81,10 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
                             </Button>
                         )}
                         {currentUser && isOwnProfile && (
-                             <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm">
-                                    <ImageIcon className="mr-2 h-4 w-4" />
-                                    Edit Cover
-                                </Button>
-                                 <Button variant="outline" size="sm">
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    Edit Bio
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Edit Profile
-                                </Button>
-                            </div>
+                             <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Profile
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -122,16 +115,10 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
                             </Button>
                         )}
                         {currentUser && isOwnProfile && (
-                            <>
-                                <Button variant="outline" size="sm" className="flex-1">
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Edit Profile
-                                </Button>
-                                 <Button variant="outline" size="sm" className="flex-1">
-                                    <ImageIcon className="mr-2 h-4 w-4" />
-                                    Edit Cover
-                                </Button>
-                            </>
+                            <Button variant="outline" size="sm" className="flex-1" onClick={() => setIsEditDialogOpen(true)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Profile
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -142,5 +129,7 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
             </div>
              <div className="h-px bg-border mt-6" />
         </div>
+        {isOwnProfile && <EditProfileDialog user={user} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />}
+        </>
     )
 }
