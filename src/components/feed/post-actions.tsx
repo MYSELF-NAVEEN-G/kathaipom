@@ -1,16 +1,22 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, Download } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { likeStory } from "@/lib/actions";
+import { likeStory, deleteStory } from "@/lib/actions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 
 export function PostActions({
   postId,
   initialLikes,
   commentsCount,
-  imageUrl,
 }: {
   postId: string;
   initialLikes: number;
@@ -20,9 +26,16 @@ export function PostActions({
   const [isPending, startTransition] = useTransition();
   const [likes, setLikes] = useState(initialLikes);
   const [isLiked, setIsLiked] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    setUserRole(role);
+  }, []);
 
   const handleLike = () => {
-    if (isLiked) return; // Prevent multiple likes for now
+    if (isLiked) return; 
 
     setIsLiked(true);
     setLikes((prev) => prev + 1);
@@ -31,20 +44,36 @@ export function PostActions({
     });
   };
 
-  const handleDownload = () => {
-    if (!imageUrl) return;
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `kathaipom-post-${new Date().getTime()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDelete = () => {
+    if (userRole !== 'super-admin') {
+      toast({
+        variant: "destructive",
+        title: "Permission Denied",
+        description: "You do not have permission to delete this story.",
+      });
+      return;
+    }
+    
+    startTransition(async () => {
+      try {
+        await deleteStory(postId);
+        toast({
+          title: "Story Deleted",
+          description: "The story has been successfully removed.",
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete the story.",
+        });
+      }
+    });
   };
 
 
   return (
-    <div className="flex w-full items-center justify-between px-4 pt-2">
-      <div className="flex items-center gap-1">
+    <div className="flex w-full items-center justify-start ml-auto">
         <Button
           variant="ghost"
           size="icon"
@@ -65,24 +94,25 @@ export function PostActions({
         <Button variant="ghost" size="icon" aria-label="Share story">
           <Share2 className="h-5 w-5 text-foreground/70" />
         </Button>
-      </div>
-      <div className="flex items-center gap-1">
-        {imageUrl && (
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleDownload}
-                aria-label="Download story image"
-            >
-                <Download className="h-5 w-5 text-foreground/70" />
-            </Button>
-        )}
-        <div className="text-sm text-muted-foreground hidden sm:block">
-          <span className="font-medium">{likes.toLocaleString()} likes</span>
-          <span className="mx-2">·</span>
-          <span>{commentsCount.toLocaleString()} comments</span>
-        </div>
-      </div>
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-5 w-5 text-foreground/70" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                {userRole === 'super-admin' && (
+                    <DropdownMenuItem
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                        onClick={handleDelete}
+                        disabled={isPending}
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Delete Story</span>
+                    </DropdownMenuItem>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
     </div>
   );
 }

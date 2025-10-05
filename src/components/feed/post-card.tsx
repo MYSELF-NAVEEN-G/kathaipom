@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Info, Send } from "lucide-react";
-import type { EnrichedStory, Story } from "@/lib/types";
+import { Info, Send } from "lucide-react";
+import type { Story } from "@/lib/types";
 import { PostActions } from "./post-actions";
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -70,9 +70,7 @@ export function PostCard({ post: story }: { post: Story & { reason?: string } })
                     </Tooltip>
                 </TooltipProvider>
             )}
-            <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-            </Button>
+           <PostActions postId={story.id} initialLikes={story.likes} commentsCount={story.comments?.length || 0} imageUrl={story.image?.imageUrl} />
         </div>
 
       </CardHeader>
@@ -94,10 +92,15 @@ export function PostCard({ post: story }: { post: Story & { reason?: string } })
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start p-0 mt-auto">
-        <PostActions postId={story.id} initialLikes={story.likes} commentsCount={story.comments?.length || 0} imageUrl={story.image?.imageUrl} />
-        <p className="px-4 pb-2 pt-1 text-xs text-muted-foreground">
-          {formatDistanceToNow(new Date(story.timestamp), { addSuffix: true })}
-        </p>
+         <div className="w-full flex justify-between items-center text-xs text-muted-foreground px-4 pb-2 pt-1">
+            <span>{formatDistanceToNow(new Date(story.timestamp), { addSuffix: true })}</span>
+             <div className="flex items-center gap-1">
+                <span className="font-medium">{story.likes.toLocaleString()} likes</span>
+                <span className="mx-1">·</span>
+                <span>{story.comments?.length || 0} comments</span>
+            </div>
+        </div>
+
         {story.comments && story.comments.length > 0 && (
             <div className="w-full px-4 pb-2 text-sm">
                 <Separator className="my-2" />

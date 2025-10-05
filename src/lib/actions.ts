@@ -69,3 +69,15 @@ export async function addComment(formData: FormData) {
         revalidatePath('/feed');
     }
 }
+
+export async function deleteStory(postId: string) {
+    const posts = await getPosts();
+    const updatedPosts = posts.filter(p => p.id !== postId);
+    
+    if (posts.length !== updatedPosts.length) {
+        await writePostsToFile(updatedPosts);
+        revalidatePath('/feed');
+    } else {
+        throw new Error('Story not found');
+    }
+}
