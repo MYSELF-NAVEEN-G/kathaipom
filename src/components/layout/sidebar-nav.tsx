@@ -42,7 +42,6 @@ type UserData = {
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const router = useRouter();
   const { user: authUser } = useAuth();
   const [currentUser, setCurrentUser] = React.useState<UserData | null>(null);
 
@@ -59,7 +58,7 @@ export function SidebarNav() {
     } else {
         setCurrentUser(null);
     }
-  }, [authUser, pathname]); // Rerun on authUser or path change
+  }, [authUser]); // Only depends on authUser now
 
   const userMenuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
@@ -87,7 +86,6 @@ export function SidebarNav() {
     localStorage.removeItem('userUsername');
     // Also clear the session cookie
     document.cookie = 'userId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    setCurrentUser(null);
     // Force a reload to clear all state and redirect to home
     window.location.href = '/';
   }

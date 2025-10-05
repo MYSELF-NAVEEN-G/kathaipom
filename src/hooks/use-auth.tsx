@@ -59,7 +59,8 @@ export function useAuth() {
       const userId = localStorage.getItem('userId');
       if (userId) {
         try {
-          const res = await fetch('/api/users');
+          // In a real app, this fetch might be to a protected endpoint
+          const res = await fetch('/users.json');
           if (!res.ok) throw new Error('Failed to fetch');
           const allUsers: User[] = await res.json();
           const currentUser = allUsers.find((u: User) => u.id === userId);
@@ -76,11 +77,13 @@ export function useAuth() {
     
     initializeAuth();
 
+    // Listen for changes in localStorage from other tabs/windows
     const handleStorageChange = () => {
         initializeAuth();
     };
 
     window.addEventListener('storage', handleStorageChange);
+    
     return () => {
         window.removeEventListener('storage', handleStorageChange);
     };
