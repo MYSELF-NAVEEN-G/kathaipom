@@ -16,18 +16,19 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
   const handleSignIn = () => {
+    const adminId = id.toLowerCase();
     if (
-      (email.toLowerCase() === 'nafadmin' && password === 'naveen') ||
-      (email.toLowerCase() === 'jed' && password === 'admins123')
+      (adminId === 'nafadmin' && password === 'naveen') ||
+      (adminId === 'jed' && password === 'admins123')
     ) {
       router.push('/feed');
     } else {
-      alert('Invalid credentials. Please try again.');
+      router.push('/login');
     }
   };
 
@@ -48,14 +49,14 @@ export default function AdminLoginPage() {
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="admin-id">ID</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
+                id="admin-id"
+                type="text"
+                placeholder="Enter your ID"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={id}
+                onChange={(e) => setId(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
