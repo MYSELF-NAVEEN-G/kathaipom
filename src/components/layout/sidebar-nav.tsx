@@ -7,7 +7,8 @@ import {
   PlusSquare,
   LogOut,
   Bell,
-  LayoutDashboard
+  LayoutDashboard,
+  Github
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -69,6 +70,7 @@ export function SidebarNav() {
   const adminMenuItems = [
     { href: '/feed', label: 'Feed Preview', icon: Home },
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/import', label: 'Import', icon: Github },
   ];
   
   const handleLogout = () => {
