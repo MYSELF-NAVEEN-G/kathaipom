@@ -1,3 +1,4 @@
+
 import { AppLayout } from "@/components/layout/app-layout";
 import { FeedDisplay } from "@/components/feed/feed-display";
 import { getPosts, getUsers } from "@/lib/data";
@@ -10,18 +11,12 @@ import type { Post } from "@/lib/types";
 import { Suspense } from "react";
 
 export default async function FeedPage() {
-  const postsData = getPosts();
-  const usersData = getUsers();
-
-  const [posts, users] = await Promise.all([postsData, usersData]);
-
-  // Create a map for quick user lookup
-  const userMap = new Map(users.map((u) => [u.id, u]));
+  const posts = await getPosts();
 
   let prioritizedFeed: PrioritizeFeedOutput = [];
 
-  // Only run AI prioritization if the API key is available
-  if (process.env.GEMINI_API_KEY) {
+  // Only run AI prioritization if the API key is available AND there are posts
+  if (process.env.GEMINI_API_KEY && posts.length > 0) {
     const aiInput: PrioritizeFeedInput = {
       posts: posts.map((p) => ({
         postId: p.id,
@@ -48,27 +43,21 @@ export default async function FeedPage() {
           interactionType: "comment",
           timestamp: new Date(Date.now() - 86400000 * 5).toISOString(),
         },
-        {
-          postId: "post-8",
-          interactionType: "follow",
-          timestamp: new Date(Date.now() - 86400000 * 1).toISOString(),
-        },
       ],
     };
 
     try {
-      if (posts.length > 0) {
-        prioritizedFeed = await prioritizeFeed(aiInput);
-      }
+      prioritizedFeed = await prioritizeFeed(aiInput);
     } catch (error) {
       console.warn(
-        "AI feed prioritization failed, likely due to a configuration issue. Falling back to chronological order.",
+        "AI feed prioritization failed. This may be due to a missing or invalid GEMINI_API_KEY. Falling back to chronological order.",
         error
       );
       // If AI fails, we'll just use the default empty array, and the sort below will be chronological.
+      prioritizedFeed = [];
     }
-  } else {
-    console.warn("GEMINI_API_KEY not found. Skipping AI feed prioritization. To enable, add your key to the .env file.");
+  } else if (posts.length > 0) {
+     console.warn("GEMINI_API_KEY not found. Skipping AI feed prioritization. To enable, add your key to the .env file.");
   }
 
 
@@ -91,9 +80,11 @@ export default async function FeedPage() {
       };
     })
     .sort((a, b) => {
+      // If the AI has run and returned results, sort by score.
       if (prioritizedFeed.length > 0) {
         return (b.priorityScore || 0) - (a.priorityScore || 0);
       }
+      // Otherwise, sort by timestamp (newest first).
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
 
