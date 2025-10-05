@@ -67,7 +67,7 @@ export function SidebarNav() {
 
   const writerMenuItems = [
     { href: '/feed', label: 'Feed Preview', icon: Home },
-    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/dashboard', label: 'Writer Dashboard', icon: LayoutDashboard },
      { href: currentUser ? `/profile/${currentUser.username}` : '#', label: 'Profile', icon: UserIcon },
   ];
 
