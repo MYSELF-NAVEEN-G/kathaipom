@@ -3,16 +3,21 @@
 import { revalidatePath } from 'next/cache';
 import type { Post } from './types';
 import { getPosts, writePostsToFile } from './data';
+import { PlaceHolderImages } from './placeholder-images';
 
 export async function addPost(postData: {
   content: string;
   authorId: string;
+  authorName: string;
+  authorUsername: string;
 }) {
   const posts = await getPosts();
 
   const newPost: Post = {
     id: `post-${Date.now()}`,
     authorId: postData.authorId,
+    authorName: postData.authorName,
+    authorUsername: postData.authorUsername,
     content: postData.content,
     likes: 0,
     comments: [],

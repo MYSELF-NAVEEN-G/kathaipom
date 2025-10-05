@@ -12,28 +12,40 @@ import { addPost } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 
 
+type AdminInfo = {
+    id: string;
+    name: string;
+    username: string;
+}
+
 export function CreatePostForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isAdmin, setIsAdmin] = React.useState(false);
-  const [authorId, setAuthorId] = React.useState<string | null>(null);
+  const [adminInfo, setAdminInfo] = React.useState<AdminInfo | null>(null);
   const [content, setContent] = React.useState('');
 
 
   React.useEffect(() => {
     const role = localStorage.getItem('userRole');
+    const name = localStorage.getItem('userName');
     const username = localStorage.getItem('userUsername');
     setIsAdmin(role === 'admin');
-    if (role === 'admin' && username) {
+    
+    if (role === 'admin' && name && username) {
+        let userId = '';
         // In a real app, you'd get the ID from the authenticated user object
         // For this prototype, we'll map the username to an ID.
-        if (username === 'nafadmin') setAuthorId('user-1');
-        else if (username === 'jed') setAuthorId('user-1'); // Or another admin ID
+        if (username === 'nafadmin') userId = 'user-1';
+        else if (username === 'jed') userId = 'user-1'; // Or another admin ID
+        else userId = username; // Fallback
+
+        setAdminInfo({ id: userId, name, username });
     }
   }, []);
 
   const handleSubmit = async (formData: FormData) => {
-    if (!isAdmin || !authorId) {
+    if (!isAdmin || !adminInfo) {
         toast({
             variant: "destructive",
             title: "Permission Denied",
@@ -52,14 +64,18 @@ export function CreatePostForm() {
     }
 
     try {
-        await addPost({ content, authorId });
+        await addPost({
+            content,
+            authorId: adminInfo.id,
+            authorName: adminInfo.name,
+            authorUsername: adminInfo.username,
+        });
         toast({
           title: "Post Created!",
           description: "Your new post has been successfully published.",
         });
         setContent('');
         
-        // No need for router.refresh() as Server Actions handle revalidation.
         // Redirect to the feed to see the new post
         router.push('/feed');
 

@@ -8,7 +8,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Info, Send } from "lucide-react";
-import type { EnrichedPost } from "@/lib/types";
+import type { EnrichedPost, Post } from "@/lib/types";
 import { PostActions } from "./post-actions";
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -43,29 +43,33 @@ function CommentForm({ postId }: { postId: string }) {
     );
 }
 
-export function PostCard({ post }: { post: EnrichedPost }) {
+export function PostCard({ post }: { post: Post & { reason?: string } }) {
+  const avatarUrl = `https://picsum.photos/seed/${post.authorUsername}/100/100`;
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 duration-300 ease-in-out flex flex-col">
       <CardHeader className="flex flex-row items-center gap-3 p-4">
         <Avatar>
-          <AvatarImage src={post.author.avatar.imageUrl} alt={post.author.name} />
-          <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+          <AvatarImage src={avatarUrl} alt={post.authorName} />
+          <AvatarFallback>{post.authorName.charAt(0)}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <p className="font-semibold text-sm">{post.author.name}</p>
-          <p className="text-xs text-muted-foreground">@{post.author.username}</p>
+          <p className="font-semibold text-sm">{post.authorName}</p>
+          <p className="text-xs text-muted-foreground">@{post.authorUsername}</p>
         </div>
         <div className="flex items-center gap-1">
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p className="max-w-xs">{post.reason}</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            {post.reason && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="max-w-xs">{post.reason}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
             <Button variant="ghost" size="icon">
                 <MoreHorizontal className="h-4 w-4" />
             </Button>

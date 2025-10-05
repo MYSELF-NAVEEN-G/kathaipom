@@ -21,6 +21,8 @@ export type Comment = {
 export type Post = {
   id:string;
   authorId: string;
+  authorName: string;
+  authorUsername: string;
   content: string;
   image?: ImagePlaceholder;
   likes: number;
@@ -28,7 +30,7 @@ export type Post = {
   timestamp: string;
 };
 
-export type EnrichedPost = Post & {
+export type EnrichedPost = Omit<Post, 'authorId'> & {
   author: User;
   priorityScore?: number;
   reason?: string;

@@ -6,7 +6,7 @@ import {
   type PrioritizeFeedInput,
   type PrioritizeFeedOutput,
 } from "@/ai/flows/intelligent-feed-prioritization";
-import type { EnrichedPost } from "@/lib/types";
+import type { Post } from "@/lib/types";
 import { Suspense } from "react";
 
 export default async function FeedPage() {
@@ -72,20 +72,17 @@ export default async function FeedPage() {
     ])
   );
 
-  const sortedPosts: EnrichedPost[] = posts
-    .map((post) => {
-      const author = userMap.get(post.authorId);
-      const priority = priorityMap.get(post.id);
-      if (!author) return null;
+  type PostWithReason = Post & { reason?: string, priorityScore?: number };
 
+  const sortedPosts: PostWithReason[] = posts
+    .map((post) => {
+      const priority = priorityMap.get(post.id);
       return {
         ...post,
-        author,
         priorityScore: priority?.score || 0,
         reason: priority?.reason || "Not prioritized",
       };
     })
-    .filter((p): p is EnrichedPost => p !== null)
     .sort((a, b) => {
       if (prioritizedFeed.length > 0) {
         return (b.priorityScore || 0) - (a.priorityScore || 0);

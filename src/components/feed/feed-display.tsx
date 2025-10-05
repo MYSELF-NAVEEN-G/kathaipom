@@ -1,9 +1,9 @@
 "use client";
 
-import type { EnrichedPost } from "@/lib/types";
+import type { Post } from "@/lib/types";
 import { PostCard } from "./post-card";
 
-export function FeedDisplay({ posts }: { posts: EnrichedPost[] }) {
+export function FeedDisplay({ posts }: { posts: (Post & { reason?: string })[] }) {
   return (
     <div className="p-4 md:p-6 h-full">
       <h2 className="text-3xl font-headline font-bold mb-6 hidden md:block">Your Feed</h2>
