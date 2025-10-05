@@ -1,7 +1,7 @@
 
 import { AppLayout } from "@/components/layout/app-layout";
 import { FeedDisplay } from "@/components/feed/feed-display";
-import { getPosts, getUsers } from "@/lib/data";
+import { getPosts } from "@/lib/data";
 import {
   prioritizeFeed,
   type PrioritizeFeedInput,
