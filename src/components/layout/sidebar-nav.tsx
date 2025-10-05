@@ -80,7 +80,7 @@ export function SidebarNav() {
     { href: '#', label: 'User Management', icon: ShieldCheck }, // Placeholder
   ];
   
-  const handleLogout = (redirect = true) => {
+  const handleLogout = () => {
     localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
@@ -88,8 +88,7 @@ export function SidebarNav() {
     // Also clear the session cookie
     document.cookie = 'userId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     setCurrentUser(null);
-    if (redirect) router.push('/');
-    // Force a reload to clear all state
+    // Force a reload to clear all state and redirect to home
     window.location.href = '/';
   }
 
@@ -172,7 +171,7 @@ export function SidebarNav() {
             </p>
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
-            <Button variant="ghost" size="icon" onClick={() => handleLogout()} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={handleLogout} className="h-8 w-8">
                 <LogOut />
             </Button>
           </div>
