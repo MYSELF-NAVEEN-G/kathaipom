@@ -23,7 +23,7 @@ export type Post = {
   content: string;
   image: ImagePlaceholder;
   likes: number;
-  comments: Comment[];
+  comments?: Comment[];
   timestamp: string;
 };
 

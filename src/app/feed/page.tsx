@@ -8,9 +8,6 @@ import {
 } from "@/ai/flows/intelligent-feed-prioritization";
 import type { EnrichedPost } from "@/lib/types";
 import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { PlusSquare } from "lucide-react";
 
 export default async function FeedPage() {
   const postsData = getPosts();
@@ -27,7 +24,7 @@ export default async function FeedPage() {
       content: p.content,
       authorId: p.authorId,
       likes: p.likes,
-      comments: p.comments.length,
+      comments: p.comments?.length || 0,
     })),
     userInterests: [
       "modern art",
