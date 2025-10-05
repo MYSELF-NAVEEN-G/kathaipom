@@ -159,6 +159,13 @@ export async function unfollowUser(followingId: string) {
 
 export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     const users = await getUsers();
+    // Check for username conflict
+    if (user.username) {
+        const existingUser = users.find(u => u.username.toLowerCase() === user.username.toLowerCase());
+        if (existingUser) {
+            throw new Error('Username is already taken.');
+        }
+    }
     const newUser: User = {
         ...user,
         id: `user-${Date.now()}`
@@ -184,8 +191,8 @@ export async function updateUser(userId: string, data: Partial<Pick<User, 'name'
     const originalUsername = users[userIndex].username;
     
     // Check for username conflict
-    if (data.username && data.username !== originalUsername) {
-        const existingUser = users.find(u => u.username === data.username);
+    if (data.username && data.username.toLowerCase() !== originalUsername.toLowerCase()) {
+        const existingUser = users.find(u => u.username.toLowerCase() === data.username!.toLowerCase());
         if (existingUser) {
             throw new Error('Username is already taken.');
         }

@@ -96,11 +96,11 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
         // Reset previews after successful submission
         setAvatarPreview(null);
         setCoverPreview(null);
-      } catch (error) {
+      } catch (error: any) {
         toast({
           variant: 'destructive',
           title: 'Update failed',
-          description: 'Could not save your profile. Please try again.',
+          description: error.message || 'Could not save your profile. Please try again.',
         });
       }
     });

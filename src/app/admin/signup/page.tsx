@@ -35,24 +35,32 @@ export default function WriterSignupPage() {
             return;
         }
 
-        const newUser = await addUser({
-            name,
-            username,
-            avatar: PlaceHolderImages.find(img => img.id === 'avatar-4')!,
-            bio: `A new writer on Kathaipom.`,
-            coverImage: PlaceHolderImages.find(img => img.id === 'cover-2')!,
-            followers: [],
-            following: [],
-            isAdmin: true, // Writers are considered admins in this context
-        });
+        try {
+            const newUser = await addUser({
+                name,
+                username,
+                avatar: PlaceHolderImages.find(img => img.id === 'avatar-4')!,
+                bio: `A new writer on Kathaipom.`,
+                coverImage: PlaceHolderImages.find(img => img.id === 'cover-2')!,
+                followers: [],
+                following: [],
+                isAdmin: true, // Writers are considered admins in this context
+            });
 
-        localStorage.setItem('userId', newUser.id);
-        localStorage.setItem('userRole', 'writer');
-        localStorage.setItem('userName', newUser.name);
-        localStorage.setItem('userUsername', newUser.username);
-        document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
-        window.dispatchEvent(new Event('login'));
-        router.push('/admin/dashboard');
+            localStorage.setItem('userId', newUser.id);
+            localStorage.setItem('userRole', 'writer');
+            localStorage.setItem('userName', newUser.name);
+            localStorage.setItem('userUsername', newUser.username);
+            document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
+            window.dispatchEvent(new Event('login'));
+            router.push('/admin/dashboard');
+        } catch(error: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Sign-up failed',
+                description: error.message || 'Could not create your account. Please try again.',
+            });
+        }
     }
 
   return (

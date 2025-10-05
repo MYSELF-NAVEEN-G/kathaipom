@@ -35,27 +35,35 @@ export default function SignupPage() {
             return;
         }
         
-        const newUser = await addUser({
-            name,
-            username,
-            avatar: PlaceHolderImages.find(img => img.id === 'avatar-5')!,
-            bio: 'A new reader on Kathaipom.',
-            coverImage: PlaceHolderImages.find(img => img.id === 'cover-3')!,
-            followers: [],
-            following: [],
-            isAdmin: false,
-        });
+        try {
+            const newUser = await addUser({
+                name,
+                username,
+                avatar: PlaceHolderImages.find(img => img.id === 'avatar-5')!,
+                bio: 'A new reader on Kathaipom.',
+                coverImage: PlaceHolderImages.find(img => img.id === 'cover-3')!,
+                followers: [],
+                following: [],
+                isAdmin: false,
+            });
 
-        localStorage.setItem('userId', newUser.id);
-        localStorage.setItem('userRole', 'user');
-        localStorage.setItem('userName', newUser.name);
-        localStorage.setItem('userUsername', newUser.username);
-        document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
-        
-        // Dispatch custom event to trigger auth hook
-        window.dispatchEvent(new Event('login'));
-        
-        router.push('/feed');
+            localStorage.setItem('userId', newUser.id);
+            localStorage.setItem('userRole', 'user');
+            localStorage.setItem('userName', newUser.name);
+            localStorage.setItem('userUsername', newUser.username);
+            document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
+            
+            // Dispatch custom event to trigger auth hook
+            window.dispatchEvent(new Event('login'));
+            
+            router.push('/feed');
+        } catch(error: any) {
+             toast({
+                variant: 'destructive',
+                title: 'Sign-up failed',
+                description: error.message || 'Could not create your account. Please try again.',
+            });
+        }
     }
 
   return (
