@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, UserCog } from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -55,8 +55,13 @@ export default function LandingPage() {
             </Card>
         </div>
       </main>
-      <footer className="py-8 text-center text-muted-foreground text-sm">
-        © {new Date().getFullYear()} Kathaipom. All rights reserved.
+      <footer className="container py-8 text-muted-foreground text-sm flex justify-between items-center">
+        <span>© {new Date().getFullYear()} Kathaipom. All rights reserved.</span>
+        <Button variant="ghost" size="icon" asChild>
+            <Link href="/admin/login" aria-label="Admin Login">
+                <UserCog className="h-4 w-4" />
+            </Link>
+        </Button>
       </footer>
     </div>
   );
