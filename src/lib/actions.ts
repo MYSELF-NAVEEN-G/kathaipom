@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Story } from './types';
+import type { Story, Comment } from './types';
 import { getPosts, writePostsToFile, getUsers, writeUsersToFile } from './data';
 
 export async function addStory(storyData: {
@@ -28,7 +28,6 @@ export async function addStory(storyData: {
   const updatedStories = [newStory, ...stories];
   await writePostsToFile(updatedStories);
 
-  // Revalidate the feed path to show the new story
   revalidatePath('/feed');
   revalidatePath(`/profile/${storyData.authorUsername}`);
 
@@ -43,6 +42,9 @@ export async function likeStory(postId: string) {
         posts[postIndex].likes += 1;
         await writePostsToFile(posts);
         revalidatePath('/feed');
+        if (posts[postIndex].authorUsername) {
+            revalidatePath(`/profile/${posts[postIndex].authorUsername}`);
+        }
     }
 }
 
@@ -60,7 +62,7 @@ export async function addComment(formData: FormData) {
     const postIndex = posts.findIndex(p => p.id === postId);
 
     if (postIndex !== -1) {
-        const newComment = {
+        const newComment: Comment = {
             id: `comment-${Date.now()}`,
             authorId,
             authorName,
@@ -88,7 +90,7 @@ export async function deleteStory(postId: string) {
     const updatedPosts = posts.filter(p => p.id !== postId);
     
     await writePostsToFile(updatedPosts);
-revalidatePath('/feed');
+    revalidatePath('/feed');
     if (postToDelete.authorUsername) {
         revalidatePath(`/profile/${postToDelete.authorUsername}`);
     }

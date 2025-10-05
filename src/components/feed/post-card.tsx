@@ -8,7 +8,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Info, Send } from "lucide-react";
-import type { Story } from "@/lib/types";
+import type { Story, User } from "@/lib/types";
 import { PostActions } from "./post-actions";
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -16,17 +16,22 @@ import React from "react";
 import { addComment } from "@/lib/actions";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { getUserById } from "@/lib/data";
 
 function CommentForm({ postId }: { postId: string }) {
     const [currentUser, setCurrentUser] = React.useState<{id: string, name: string} | null>(null);
 
     React.useEffect(() => {
-        // This code runs on the client after the component mounts
-        const username = localStorage.getItem('userUsername');
-        const name = localStorage.getItem('userName');
-        if (username && name) {
-            setCurrentUser({ id: username, name: name });
+        const userId = localStorage.getItem('userId');
+        const fetchUser = async () => {
+            if (userId) {
+                const user = await getUserById(userId);
+                if (user) {
+                    setCurrentUser({ id: user.id, name: user.name });
+                }
+            }
         }
+        fetchUser();
     }, []);
 
     const formRef = React.useRef<HTMLFormElement>(null);
@@ -34,7 +39,6 @@ function CommentForm({ postId }: { postId: string }) {
     const handleCommentSubmit = async (formData: FormData) => {
         if (!currentUser) return;
 
-        // Manually append current user data to formData
         formData.append('authorId', currentUser.id);
         formData.append('authorName', currentUser.name);
 
@@ -59,7 +63,19 @@ export function PostCard({ post: story }: { post: Story & { reason?: string } })
   const authorName = story.authorName || 'Unknown Author';
   const authorUsername = story.authorUsername || 'unknown';
   
-  const avatarUrl = `https://picsum.photos/seed/${authorUsername}/100/100`;
+  const [author, setAuthor] = React.useState<User | null>(null);
+  
+  React.useEffect(() => {
+      const fetchAuthor = async () => {
+        const user = await getUserById(story.authorId);
+        if (user) {
+            setAuthor(user);
+        }
+      }
+      fetchAuthor();
+  }, [story.authorId]);
+
+
   const firstPageContent = Array.isArray(story.content) ? story.content[0] : story.content;
   const firstImage = (story.images && story.images.length > 0) ? story.images[0] : null;
 
@@ -67,7 +83,7 @@ export function PostCard({ post: story }: { post: Story & { reason?: string } })
     <Card className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 duration-300 ease-in-out flex flex-col">
       <CardHeader className="flex flex-row items-center gap-3 p-4">
         <Avatar>
-          <AvatarImage src={avatarUrl} alt={authorName} />
+          <AvatarImage src={author?.avatar.imageUrl} alt={authorName} />
           <AvatarFallback>{authorName?.charAt(0) || "-"}</AvatarFallback>
         </Avatar>
         <div className="flex-1">

@@ -26,6 +26,9 @@ import { Logo } from '@/components/logo';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { getUserById } from '@/lib/data';
+import type { User } from '@/lib/types';
+
 
 type UserRole = 'user' | 'writer' | 'super-admin' | null;
 
@@ -33,7 +36,7 @@ type UserData = {
   id: string;
   name: string;
   username: string;
-  avatar: string;
+  avatarUrl: string;
   role: UserRole;
 };
 
@@ -43,22 +46,27 @@ export function SidebarNav() {
   const [currentUser, setCurrentUser] = React.useState<UserData | null>(null);
 
   React.useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    const userRole = localStorage.getItem('userRole') as UserRole;
-    const userName = localStorage.getItem('userName');
-    const userUsername = localStorage.getItem('userUsername');
-    
-    if (userId && userRole && userName && userUsername) {
-        setCurrentUser({
-            id: userId,
-            name: userName,
-            username: userUsername,
-            avatar: `https://picsum.photos/seed/${userUsername}/100/100`,
-            role: userRole,
-        })
-    } else {
-        setCurrentUser(null); 
-    }
+    const fetchUser = async () => {
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            const user: User | undefined = await getUserById(userId);
+            if (user) {
+                const userRole = localStorage.getItem('userRole') as UserRole;
+                setCurrentUser({
+                    id: user.id,
+                    name: user.name,
+                    username: user.username,
+                    avatarUrl: user.avatar.imageUrl,
+                    role: userRole,
+                });
+            } else {
+                 handleLogout(false);
+            }
+        } else {
+            setCurrentUser(null);
+        }
+    };
+    fetchUser();
   }, [pathname]); // Rerun on path change to reflect login/logout
 
   const userMenuItems = [
@@ -80,13 +88,13 @@ export function SidebarNav() {
     { href: '#', label: 'User Management', icon: ShieldCheck }, // Placeholder
   ];
   
-  const handleLogout = () => {
+  const handleLogout = (redirect = true) => {
     localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
     localStorage.removeItem('userUsername');
     setCurrentUser(null);
-    router.push('/');
+    if (redirect) router.push('/');
   }
 
   if (!currentUser) {
@@ -158,7 +166,7 @@ export function SidebarNav() {
       <SidebarFooter className="p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
+            <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
             <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
@@ -168,7 +176,7 @@ export function SidebarNav() {
             </p>
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={() => handleLogout()} className="h-8 w-8">
                 <LogOut />
             </Button>
           </div>

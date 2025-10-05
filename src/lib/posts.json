@@ -1,4 +1,3 @@
-
 [
   {
     "id": "post-1759673818864",
@@ -11,7 +10,7 @@
     "images": [
       "https://images.unsplash.com/photo-1585373683920-671438c82bfa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjdXRlJTIwY2F0fGVufDB8fHx8MTc1OTU2OTExNnww&ixlib=rb-4.1.0&q=80&w=1080"
     ],
-    "likes": 0,
+    "likes": 1,
     "comments": [],
     "timestamp": "2025-10-05T14:16:58.864Z"
   },
@@ -26,7 +25,7 @@
     "images": [
       "https://images.unsplash.com/photo-1588312744377-2adfb7b8578a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjaXR5JTIwbmlnaHR8ZW58MHx8fHwxNzU5NTM1MjYxfDA&ixlib=rb-4.1.0&q=80&w=1080"
     ],
-    "likes": 0,
+    "likes": 1,
     "comments": [],
     "timestamp": "2025-10-05T14:16:34.704Z"
   }
