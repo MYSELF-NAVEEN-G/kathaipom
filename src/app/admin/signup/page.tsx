@@ -1,0 +1,72 @@
+'use client';
+
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Logo } from "@/components/logo";
+import { useRouter } from "next/navigation";
+import React from "react";
+
+export default function WriterSignupPage() {
+    const router = useRouter();
+    const [name, setName] = React.useState('');
+    const [username, setUsername] = React.useState('');
+
+    const handleSignUp = () => {
+        // In a real app, you'd have actual sign up logic here.
+        // For this prototype, we'll simulate a writer signup and grant admin role.
+        localStorage.setItem('userRole', 'admin');
+        localStorage.setItem('userName', name);
+        localStorage.setItem('userUsername', username);
+        router.push('/admin/dashboard');
+    }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="mx-auto w-full max-w-sm">
+        <CardHeader className="text-center">
+            <div className="mb-4 flex justify-center">
+                <Logo size="large" />
+            </div>
+          <CardTitle className="text-2xl font-headline">Create a Writer Account</CardTitle>
+          <CardDescription>
+            Enter your information to start publishing your stories.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4">
+             <div className="grid gap-2">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" placeholder="Your Name" required value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input id="username" placeholder="your_username" required value={username} onChange={(e) => setUsername(e.target.value)} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" type="password" required />
+            </div>
+            <Button type="submit" className="w-full" onClick={handleSignUp}>
+              Sign Up
+            </Button>
+          </div>
+          <div className="mt-4 text-center text-sm">
+            Already have an account?{" "}
+            <Link href="/admin/login" className="underline">
+              Sign in
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -49,10 +49,10 @@ export default function AdminLoginPage() {
             <Logo size="large" />
           </div>
           <CardTitle className="text-2xl font-headline">
-            Admin Sign In
+            Writer Sign In
           </CardTitle>
           <CardDescription>
-            Enter your credentials to access the admin dashboard.
+            Enter your credentials to access the writer dashboard.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -96,7 +96,13 @@ export default function AdminLoginPage() {
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">
-            Not an admin?{' '}
+            Don't have an account?{" "}
+            <Link href="/admin/signup" className="underline">
+              Create account
+            </Link>
+          </div>
+          <div className="mt-2 text-center text-sm">
+            Not a writer?{' '}
             <Link href="/login" className="underline">
               Sign in here
             </Link>
