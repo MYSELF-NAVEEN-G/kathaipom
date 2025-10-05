@@ -33,11 +33,11 @@ export default function AdminLoginPage() {
         if (username.toLowerCase() === 'nafadmin' && password === 'nafstud') {
             const adminUser = users.find(u => u.username === 'nafadmin');
             if (adminUser) {
+                document.cookie = `userId=${adminUser.id}; path=/; max-age=604800`;
                 localStorage.setItem('userId', adminUser.id);
                 localStorage.setItem('userRole', 'super-admin');
                 localStorage.setItem('userName', adminUser.name);
                 localStorage.setItem('userUsername', adminUser.username);
-                document.cookie = `userId=${adminUser.id}; path=/; max-age=604800`;
                 window.dispatchEvent(new Event('login'));
                 router.push('/admin/dashboard');
                 return;
@@ -46,11 +46,11 @@ export default function AdminLoginPage() {
 
         const user = users.find(u => u.username === username);
         if (user && user.isAdmin) {
+            document.cookie = `userId=${user.id}; path=/; max-age=604800`;
             localStorage.setItem('userId', user.id);
             localStorage.setItem('userRole', 'writer');
             localStorage.setItem('userName', user.name);
             localStorage.setItem('userUsername', user.username);
-            document.cookie = `userId=${user.id}; path=/; max-age=604800`;
             window.dispatchEvent(new Event('login'));
             router.push('/admin/dashboard');
         } else {

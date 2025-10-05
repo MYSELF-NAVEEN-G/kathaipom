@@ -2,25 +2,22 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import type { User } from '@/lib/types';
-import { getUsers } from '@/lib/data';
 
-async function fetchUsers(): Promise<User[]> {
+async function fetchUserById(userId: string): Promise<User | null> {
     try {
-        const res = await fetch('/api/get-users-from-file');
+        const res = await fetch('/api/users');
         if (!res.ok) {
-            throw new Error('Failed to fetch users');
+            console.error('Failed to fetch users');
+            return null;
         }
-        return await res.json();
+        const users: User[] = await res.json();
+        const currentUser = users.find((u: User) => u.id === userId);
+        return currentUser || null;
     } catch (error) {
-        console.error('Error fetching users:', error);
-        // In case of network error, fallback to reading from data file directly
-        // This part is tricky because of client/server boundaries, 
-        // but for a mock setup, an API route is the cleaner way.
-        // If the API fails, we return an empty array.
-        return [];
+        console.error('Error fetching user:', error);
+        return null;
     }
 }
-
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -31,14 +28,8 @@ export function useAuth() {
     const userId = localStorage.getItem('userId');
     
     if (userId) {
-      try {
-        const allUsers = await fetchUsers();
-        const currentUser = allUsers.find((u: User) => u.id === userId);
-        setUser(currentUser || null);
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-        setUser(null);
-      }
+        const currentUser = await fetchUserById(userId);
+        setUser(currentUser);
     } else {
       setUser(null);
     }
@@ -48,19 +39,16 @@ export function useAuth() {
   useEffect(() => {
     initializeAuth();
 
-    const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'userId') {
-            initializeAuth();
-        }
+    const handleAuthChange = () => {
+        initializeAuth();
     };
-    window.addEventListener('storage', handleStorageChange);
-    
-    const handleLogin = () => initializeAuth();
-    window.addEventListener('login', handleLogin);
+
+    window.addEventListener('storage', handleAuthChange);
+    window.addEventListener('login', handleAuthChange);
 
     return () => {
-        window.removeEventListener('storage', handleStorageChange);
-        window.removeEventListener('login', handleLogin);
+        window.removeEventListener('storage', handleAuthChange);
+        window.removeEventListener('login', handleAuthChange);
     };
   }, [initializeAuth]);
 

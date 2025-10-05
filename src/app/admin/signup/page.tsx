@@ -47,11 +47,11 @@ export default function WriterSignupPage() {
                 isAdmin: true, // Writers are considered admins in this context
             });
 
+            document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
             localStorage.setItem('userId', newUser.id);
             localStorage.setItem('userRole', 'writer');
             localStorage.setItem('userName', newUser.name);
             localStorage.setItem('userUsername', newUser.username);
-            document.cookie = `userId=${newUser.id}; path=/; max-age=604800`;
             window.dispatchEvent(new Event('login'));
             router.push('/admin/dashboard');
         } catch(error: any) {

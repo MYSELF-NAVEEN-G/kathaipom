@@ -34,11 +34,14 @@ export default function LoginPage() {
         const user = users.find(u => u.username === username);
 
         if (user && !user.isAdmin) {
+          // Set cookie for server actions
+          document.cookie = `userId=${user.id}; path=/; max-age=604800`; // 7 days
+
+          // Set localStorage for client-side state
           localStorage.setItem('userId', user.id);
           localStorage.setItem('userRole', 'user');
           localStorage.setItem('userName', user.name);
           localStorage.setItem('userUsername', user.username);
-          document.cookie = `userId=${user.id}; path=/; max-age=604800`;
           
           // Dispatch a custom event to notify other components (like the sidebar)
           window.dispatchEvent(new Event('login'));
