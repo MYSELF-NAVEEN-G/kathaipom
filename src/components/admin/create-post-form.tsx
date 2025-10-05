@@ -12,7 +12,7 @@ import { addStory } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 
 
-type AdminInfo = {
+type UserInfo = {
     id: string;
     name: string;
     username: string;
@@ -21,8 +21,8 @@ type AdminInfo = {
 export function CreatePostForm() {
   const { toast } = useToast();
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = React.useState(false);
-  const [adminInfo, setAdminInfo] = React.useState<AdminInfo | null>(null);
+  const [canPost, setCanPost] = React.useState(false);
+  const [userInfo, setUserInfo] = React.useState<UserInfo | null>(null);
   const [content, setContent] = React.useState('');
 
 
@@ -30,26 +30,22 @@ export function CreatePostForm() {
     const role = localStorage.getItem('userRole');
     const name = localStorage.getItem('userName');
     const username = localStorage.getItem('userUsername');
-    setIsAdmin(role === 'admin');
+    const isWriterOrAdmin = role === 'writer' || role === 'super-admin';
+    setCanPost(isWriterOrAdmin);
     
-    if (role === 'admin' && name && username) {
-        let userId = '';
-        // In a real app, you'd get the ID from the authenticated user object
-        // For this prototype, we'll map the username to an ID.
-        if (username === 'nafadmin') userId = 'user-1';
-        else if (username === 'jed') userId = 'user-1'; // Or another admin ID
-        else userId = username; // Fallback
-
-        setAdminInfo({ id: userId, name, username });
+    if (isWriterOrAdmin && name && username) {
+        // In a real app, ID would come from the database
+        const userId = username; 
+        setUserInfo({ id: userId, name, username });
     }
   }, []);
 
   const handleSubmit = async (formData: FormData) => {
-    if (!isAdmin || !adminInfo) {
+    if (!canPost || !userInfo) {
         toast({
             variant: "destructive",
             title: "Permission Denied",
-            description: "Only admins can create stories.",
+            description: "You do not have permission to create stories.",
         });
         return;
     }
@@ -66,9 +62,9 @@ export function CreatePostForm() {
     try {
         await addStory({
             content,
-            authorId: adminInfo.id,
-            authorName: adminInfo.name,
-            authorUsername: adminInfo.username,
+            authorId: userInfo.id,
+            authorName: userInfo.name,
+            authorUsername: userInfo.username,
         });
         toast({
           title: "Story Published!",
@@ -91,7 +87,7 @@ export function CreatePostForm() {
 
   return (
     <form action={handleSubmit}>
-      <fieldset disabled={!isAdmin}>
+      <fieldset disabled={!canPost}>
         <Card>
           <CardContent className="p-6">
             <div className="grid gap-4">
@@ -129,9 +125,9 @@ export function CreatePostForm() {
           </CardFooter>
         </Card>
       </fieldset>
-      {!isAdmin && (
+      {!canPost && (
         <p className="text-sm text-destructive mt-2">
-            You must be an admin to create a story.
+            You must be a writer or admin to create a story.
         </p>
       )}
     </form>

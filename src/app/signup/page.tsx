@@ -38,7 +38,7 @@ export default function SignupPage() {
             </div>
           <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
           <CardDescription>
-            Enter your information to create a new account.
+            Enter your information to create a new reader account.
           </CardDescription>
         </CardHeader>
         <CardContent>

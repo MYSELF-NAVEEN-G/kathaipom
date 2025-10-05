@@ -14,31 +14,30 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { UserCog } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [name, setName] = useState('');
-  const [id, setId] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
   const handleSignIn = () => {
-    const adminId = id.toLowerCase();
-    if (
-      (adminId === 'nafadmin' && password === 'naveen') ||
-      (adminId === 'jed' && password === 'admins123')
-    ) {
-      // Set role in localStorage for admin
-      localStorage.setItem('userRole', 'admin');
-      localStorage.setItem('userName', name);
-      localStorage.setItem('userUsername', adminId);
+    // Super Admin check
+    if (username.toLowerCase() === 'superadmin' && password === 'superadmin123') {
+      localStorage.setItem('userRole', 'super-admin');
+      localStorage.setItem('userName', 'Super Admin');
+      localStorage.setItem('userUsername', 'superadmin');
       router.push('/admin/dashboard');
-    } else {
-      // On failure, clear role and redirect to user login
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userName');
-      localStorage.removeItem('userUsername');
-      router.push('/login');
+      return;
     }
+
+    // For this prototype, any other login on this page is treated as a writer.
+    // In a real app, you'd validate writer credentials against a database.
+    localStorage.setItem('userRole', 'writer');
+    localStorage.setItem('userName', name);
+    localStorage.setItem('userUsername', username);
+    router.push('/admin/dashboard');
   };
 
   return (
@@ -58,9 +57,9 @@ export default function AdminLoginPage() {
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="admin-name">Name</Label>
+              <Label htmlFor="writer-name">Name</Label>
               <Input
-                id="admin-name"
+                id="writer-name"
                 type="text"
                 placeholder="Enter your name"
                 required
@@ -69,20 +68,18 @@ export default function AdminLoginPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="admin-id">ID</Label>
+              <Label htmlFor="writer-username">Username</Label>
               <Input
-                id="admin-id"
+                id="writer-username"
                 type="text"
-                placeholder="Enter your ID"
+                placeholder="Enter your username"
                 required
-                value={id}
-                onChange={(e) => setId(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -104,7 +101,7 @@ export default function AdminLoginPage() {
           <div className="mt-2 text-center text-sm">
             Not a writer?{' '}
             <Link href="/login" className="underline">
-              Sign in here
+              Sign in as a reader
             </Link>
           </div>
         </CardContent>

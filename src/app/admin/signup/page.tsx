@@ -21,9 +21,8 @@ export default function WriterSignupPage() {
     const [username, setUsername] = React.useState('');
 
     const handleSignUp = () => {
-        // In a real app, you'd have actual sign up logic here.
-        // For this prototype, we'll simulate a writer signup and grant admin role.
-        localStorage.setItem('userRole', 'admin');
+        // For this prototype, we'll simulate a writer signup and grant 'writer' role.
+        localStorage.setItem('userRole', 'writer');
         localStorage.setItem('userName', name);
         localStorage.setItem('userUsername', username);
         router.push('/admin/dashboard');

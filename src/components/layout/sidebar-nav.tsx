@@ -8,7 +8,8 @@ import {
   LogOut,
   Bell,
   LayoutDashboard,
-  Github
+  Github,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -26,14 +27,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
+type UserRole = 'user' | 'writer' | 'super-admin' | null;
+
 type UserData = {
   name: string;
   username: string;
   avatar: string;
-  isAdmin: boolean;
+  role: UserRole;
 };
-
-const defaultAvatar = 'https://picsum.photos/seed/avatar-default/100/100';
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -41,24 +42,21 @@ export function SidebarNav() {
   const [currentUser, setCurrentUser] = React.useState<UserData | null>(null);
 
   React.useEffect(() => {
-    // On component mount, check localStorage to set the user role
-    const userRole = localStorage.getItem('userRole');
+    const userRole = localStorage.getItem('userRole') as UserRole;
     const userName = localStorage.getItem('userName');
     const userUsername = localStorage.getItem('userUsername');
     
     if (userRole && userName && userUsername) {
-        const isAdmin = userRole === 'admin';
         setCurrentUser({
             name: userName,
             username: userUsername,
             avatar: `https://picsum.photos/seed/${userUsername}/100/100`,
-            isAdmin: isAdmin,
+            role: userRole,
         })
     } else {
-        // If no role, default to a guest-like state or redirect
         setCurrentUser(null); 
     }
-  }, [pathname]); // Re-run on path change to update active states
+  }, [pathname]);
 
   const userMenuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
@@ -67,14 +65,18 @@ export function SidebarNav() {
     { href: '#', label: 'Profile', icon: UserIcon },
   ];
 
-  const adminMenuItems = [
+  const writerMenuItems = [
     { href: '/feed', label: 'Feed Preview', icon: Home },
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/import', label: 'Import', icon: Github },
   ];
+
+  const adminMenuItems = [
+    ...writerMenuItems,
+    { href: '#', label: 'User Management', icon: ShieldCheck }, // Placeholder
+  ];
   
   const handleLogout = () => {
-    // Clear the role from localStorage on logout
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
     localStorage.removeItem('userUsername');
@@ -82,7 +84,6 @@ export function SidebarNav() {
   }
 
   if (!currentUser) {
-    // Render a logged-out state or a loading skeleton
     return (
         <>
             <SidebarHeader className="p-4 flex items-center gap-2">
@@ -100,7 +101,20 @@ export function SidebarNav() {
     );
   }
 
-  const menuItems = currentUser.isAdmin ? adminMenuItems : userMenuItems;
+  const getMenuItems = () => {
+    switch (currentUser.role) {
+      case 'super-admin':
+        return adminMenuItems;
+      case 'writer':
+        return writerMenuItems;
+      case 'user':
+      default:
+        return userMenuItems;
+    }
+  };
+
+  const menuItems = getMenuItems();
+  const canCreate = currentUser.role === 'writer' || currentUser.role === 'super-admin';
 
   return (
     <>
@@ -109,7 +123,7 @@ export function SidebarNav() {
         <SidebarInput placeholder="Search..." className="mt-0" />
       </SidebarHeader>
       <SidebarContent className="p-4 pt-0">
-        {currentUser.isAdmin && (
+        {canCreate && (
            <Button asChild className="w-full mb-4" size="lg">
              <Link href="/admin/dashboard">
                <PlusSquare className="mr-2 h-5 w-5" />

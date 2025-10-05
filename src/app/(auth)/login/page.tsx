@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { UserCog } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,7 +22,6 @@ export default function LoginPage() {
 
   const handleSignIn = () => {
     // In a real app, you'd have actual auth logic here.
-    // For this prototype, we'll simulate a user login.
     localStorage.setItem('userRole', 'user');
     localStorage.setItem('userName', username); // Store username as name for now
     localStorage.setItem('userUsername', username);
@@ -37,7 +37,7 @@ export default function LoginPage() {
             </div>
           <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
           <CardDescription>
-            Enter your credentials to sign in to your account.
+            Sign in to access your personalized story feed.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -67,9 +67,9 @@ export default function LoginPage() {
               Sign up
             </Link>
           </div>
-           <div className="mt-2 text-center text-sm">
-            Are you an admin?{" "}
-            <Link href="/admin/login" className="underline">
+           <div className="mt-4 text-center text-sm text-muted-foreground">
+             Are you a writer?{" "}
+            <Link href="/admin/login" className="underline font-semibold text-foreground">
               Sign in here
             </Link>
           </div>
