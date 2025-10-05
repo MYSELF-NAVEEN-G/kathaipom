@@ -43,12 +43,15 @@ function readPostsFromFile(): Post[] {
     const data = fs.readFileSync(postsFilePath, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    // If the file doesn't exist or is empty, return an empty array
+    if (fs.existsSync(postsFilePath) && fs.readFileSync(postsFilePath, 'utf-8').trim() !== '') {
+        return [];
+    }
+    fs.writeFileSync(postsFilePath, JSON.stringify([], null, 2), 'utf-8');
     return [];
   }
 }
 
-function writePostsToFile(posts: Post[]) {
+export function writePostsToFile(posts: Post[]) {
   fs.writeFileSync(postsFilePath, JSON.stringify(posts, null, 2), 'utf-8');
 }
 
@@ -63,34 +66,15 @@ export async function getPosts(): Promise<Post[]> {
   return Promise.resolve(readPostsFromFile());
 }
 
-export async function addPost(postData: { content: string; authorId: string; }): Promise<Post> {
-  const posts = readPostsFromFile();
-  const postImages = PlaceHolderImages.filter(p => p.id.startsWith('post-'));
-  const randomImage = postImages[Math.floor(Math.random() * postImages.length)];
-
-  const newPost: Post = {
-    id: `post-${Date.now()}`,
-    authorId: postData.authorId,
-    content: postData.content,
-    image: randomImage,
-    likes: 0,
-    comments: [],
-    timestamp: new Date().toISOString(),
-  };
-  const updatedPosts = [newPost, ...posts]; // Add to the beginning of the array
-  writePostsToFile(updatedPosts);
-  return Promise.resolve(newPost);
-}
-
-
 export async function getCommentsForPost(postId: string): Promise<Comment[]> {
     const posts = readPostsFromFile();
-    return Promise.resolve(comments.filter(c => posts.find(p => p.id === postId)?.comments?.map(pc => pc.id).includes(c.id)));
+    const post = posts.find(p => p.id === postId);
+    if (!post || !post.comments) return Promise.resolve([]);
+    const postCommentIds = new Set(post.comments.map(c => c.id));
+    return Promise.resolve(comments.filter(c => postCommentIds.has(c.id)));
 }
 
 export async function getCurrentUser(): Promise<User> {
-    // In a real app, this would be determined by the authenticated user
-    // For now, we can get the user from localStorage
     if (typeof window !== 'undefined') {
         const username = localStorage.getItem('userUsername');
         const user = users.find(u => u.username === username);

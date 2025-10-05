@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePlus, Send } from "lucide-react";
 import React from "react";
-import { addPost } from "@/lib/data";
+import { addPost } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 
 
@@ -32,8 +32,7 @@ export function CreatePostForm() {
     }
   }, []);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (formData: FormData) => {
     if (!isAdmin || !authorId) {
         toast({
             variant: "destructive",
@@ -42,6 +41,7 @@ export function CreatePostForm() {
         });
         return;
     }
+    const content = formData.get('content') as string;
      if (!content.trim()) {
       toast({
         variant: 'destructive',
@@ -58,10 +58,8 @@ export function CreatePostForm() {
           description: "Your new post has been successfully published.",
         });
         setContent('');
-        (event.target as HTMLFormElement).reset();
         
-        // This is key: it tells Next.js to re-fetch the data on the feed page.
-        router.refresh();
+        // No need for router.refresh() as Server Actions handle revalidation.
         // Redirect to the feed to see the new post
         router.push('/feed');
 
@@ -76,7 +74,7 @@ export function CreatePostForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form action={handleSubmit}>
       <fieldset disabled={!isAdmin}>
         <Card>
           <CardContent className="p-6">
@@ -85,6 +83,7 @@ export function CreatePostForm() {
                 <Label htmlFor="post-content">Post Content</Label>
                 <Textarea
                   id="post-content"
+                  name="content"
                   placeholder="What's on your mind?"
                   required
                   rows={5}
