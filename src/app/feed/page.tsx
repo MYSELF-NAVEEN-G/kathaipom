@@ -18,52 +18,59 @@ export default async function FeedPage() {
   // Create a map for quick user lookup
   const userMap = new Map(users.map((u) => [u.id, u]));
 
-  const aiInput: PrioritizeFeedInput = {
-    posts: posts.map((p) => ({
-      postId: p.id,
-      content: p.content,
-      authorId: p.authorId,
-      likes: p.likes,
-      comments: p.comments?.length || 0,
-    })),
-    userInterests: [
-      "modern art",
-      "minimalist photography",
-      "architecture",
-      "travel",
-      "design",
-    ],
-    userInteractionHistory: [
-      {
-        postId: "post-2",
-        interactionType: "like",
-        timestamp: new Date(Date.now() - 86400000 * 2).toISOString(),
-      },
-      {
-        postId: "post-5",
-        interactionType: "comment",
-        timestamp: new Date(Date.now() - 86400000 * 5).toISOString(),
-      },
-      {
-        postId: "post-8",
-        interactionType: "follow",
-        timestamp: new Date(Date.now() - 86400000 * 1).toISOString(),
-      },
-    ],
-  };
-
   let prioritizedFeed: PrioritizeFeedOutput = [];
-  try {
-    if (posts.length > 0) {
-      prioritizedFeed = await prioritizeFeed(aiInput);
+
+  // Only run AI prioritization if the API key is available
+  if (process.env.GEMINI_API_KEY) {
+    const aiInput: PrioritizeFeedInput = {
+      posts: posts.map((p) => ({
+        postId: p.id,
+        content: p.content,
+        authorId: p.authorId,
+        likes: p.likes,
+        comments: p.comments?.length || 0,
+      })),
+      userInterests: [
+        "modern art",
+        "minimalist photography",
+        "architecture",
+        "travel",
+        "design",
+      ],
+      userInteractionHistory: [
+        {
+          postId: "post-2",
+          interactionType: "like",
+          timestamp: new Date(Date.now() - 86400000 * 2).toISOString(),
+        },
+        {
+          postId: "post-5",
+          interactionType: "comment",
+          timestamp: new Date(Date.now() - 86400000 * 5).toISOString(),
+        },
+        {
+          postId: "post-8",
+          interactionType: "follow",
+          timestamp: new Date(Date.now() - 86400000 * 1).toISOString(),
+        },
+      ],
+    };
+
+    try {
+      if (posts.length > 0) {
+        prioritizedFeed = await prioritizeFeed(aiInput);
+      }
+    } catch (error) {
+      console.warn(
+        "AI feed prioritization failed, likely due to a configuration issue. Falling back to chronological order.",
+        error
+      );
+      // If AI fails, we'll just use the default empty array, and the sort below will be chronological.
     }
-  } catch (error) {
-    console.warn(
-      "AI feed prioritization failed. Falling back to chronological order.",
-      error
-    );
-    // If AI fails, we'll just use the default empty array, and the sort below will be chronological.
+  } else {
+    console.warn("GEMINI_API_KEY not found. Skipping AI feed prioritization. To enable, add your key to the .env file.");
   }
+
 
   const priorityMap = new Map(
     prioritizedFeed.map((p) => [
