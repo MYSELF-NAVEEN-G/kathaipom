@@ -46,19 +46,34 @@ const postsFilePath = path.join(process.cwd(), 'src', 'lib', 'posts.json');
 
 function readPostsFromFile(): Story[] {
   try {
+    // Check if the file exists before trying to read it
+    if (!fs.existsSync(postsFilePath)) {
+      // If it doesn't exist, create it with an empty array
+      fs.writeFileSync(postsFilePath, JSON.stringify([], null, 2), 'utf-8');
+      return [];
+    }
+    
     const data = fs.readFileSync(postsFilePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    if (fs.existsSync(postsFilePath) && fs.readFileSync(postsFilePath, 'utf-8').trim() !== '') {
+    
+    // Handle case where file is empty
+    if (data.trim() === '') {
         return [];
     }
-    fs.writeFileSync(postsFilePath, JSON.stringify([], null, 2), 'utf-8');
+
+    return JSON.parse(data);
+  } catch (error) {
+    console.error("Error reading or parsing posts.json:", error);
+    // If there's an error (e.g., malformed JSON), return an empty array as a fallback
     return [];
   }
 }
 
 export function writePostsToFile(posts: Story[]) {
-  fs.writeFileSync(postsFilePath, JSON.stringify(posts, null, 2), 'utf-8');
+  try {
+    fs.writeFileSync(postsFilePath, JSON.stringify(posts, null, 2), 'utf-8');
+  } catch (error) {
+    console.error("Error writing to posts.json:", error);
+  }
 }
 
 

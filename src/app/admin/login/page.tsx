@@ -14,10 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserCog } from 'lucide-react';
 
 export default function AdminLoginPage() {
-  const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
@@ -34,8 +32,9 @@ export default function AdminLoginPage() {
 
     // For this prototype, any other login on this page is treated as a writer.
     // In a real app, you'd validate writer credentials against a database.
+    // For now, we'll use the username as the name if no name is provided in signup.
     localStorage.setItem('userRole', 'writer');
-    localStorage.setItem('userName', name);
+    localStorage.setItem('userName', username); // Use username as name
     localStorage.setItem('userUsername', username);
     router.push('/admin/dashboard');
   };
@@ -57,17 +56,6 @@ export default function AdminLoginPage() {
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="writer-name">Name</Label>
-              <Input
-                id="writer-name"
-                type="text"
-                placeholder="Enter your name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
               <Label htmlFor="writer-username">Username</Label>
               <Input
                 id="writer-username"
@@ -88,7 +76,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full" onClick={handleSignIn}>
+            <Button type="button" className="w-full" onClick={handleSignIn}>
               Sign In
             </Button>
           </div>

@@ -22,8 +22,12 @@ export default function LoginPage() {
 
   const handleSignIn = () => {
     // In a real app, you'd have actual auth logic here.
+    // For now, we find a user by username to get their name.
+    const mockUser = [{name: 'Jane Doe', username: 'janedoe'}, {name: 'John Smith', username: 'johnsmith'}].find(u => u.username === username);
+    const name = mockUser ? mockUser.name : username;
+
     localStorage.setItem('userRole', 'user');
-    localStorage.setItem('userName', username); // Store username as name for now
+    localStorage.setItem('userName', name);
     localStorage.setItem('userUsername', username);
     router.push('/feed');
   };
@@ -47,7 +51,7 @@ export default function LoginPage() {
               <Input
                 id="username"
                 type="text"
-                placeholder="your_username"
+                placeholder="janedoe"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -57,7 +61,7 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required />
             </div>
-            <Button type="submit" className="w-full" onClick={handleSignIn}>
+            <Button type="button" className="w-full" onClick={handleSignIn}>
               Sign In
             </Button>
           </div>

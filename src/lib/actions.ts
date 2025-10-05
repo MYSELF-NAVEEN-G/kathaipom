@@ -3,14 +3,21 @@
 import { revalidatePath } from 'next/cache';
 import type { Story } from './types';
 import { getPosts, writePostsToFile } from './data';
+import { PlaceHolderImages, type ImagePlaceholder } from './placeholder-images';
 
 export async function addStory(storyData: {
   content: string;
   authorId: string;
   authorName: string;
   authorUsername: string;
+  imageId?: string;
 }) {
   const stories = await getPosts();
+
+  let image: ImagePlaceholder | undefined = undefined;
+  if (storyData.imageId) {
+    image = PlaceHolderImages.find(p => p.id === storyData.imageId);
+  }
 
   const newStory: Story = {
     id: `post-${Date.now()}`,
@@ -18,6 +25,7 @@ export async function addStory(storyData: {
     authorName: storyData.authorName,
     authorUsername: storyData.authorUsername,
     content: storyData.content,
+    image: image,
     likes: 0,
     comments: [],
     timestamp: new Date().toISOString(),
@@ -28,6 +36,7 @@ export async function addStory(storyData: {
 
   // Revalidate the feed path to show the new story
   revalidatePath('/feed');
+  revalidatePath(`/profile/${storyData.authorUsername}`);
 
   return newStory;
 }
@@ -67,17 +76,21 @@ export async function addComment(formData: FormData) {
         posts[postIndex].comments.unshift(newComment);
         await writePostsToFile(posts);
         revalidatePath('/feed');
+        revalidatePath(`/profile/${posts[postIndex].authorUsername}`);
     }
 }
 
 export async function deleteStory(postId: string) {
     const posts = await getPosts();
+    const postToDelete = posts.find(p => p.id === postId);
+
+    if (!postToDelete) {
+      throw new Error('Story not found');
+    }
+
     const updatedPosts = posts.filter(p => p.id !== postId);
     
-    if (posts.length !== updatedPosts.length) {
-        await writePostsToFile(updatedPosts);
-        revalidatePath('/feed');
-    } else {
-        throw new Error('Story not found');
-    }
+    await writePostsToFile(updatedPosts);
+    revalidatePath('/feed');
+    revalidatePath(`/profile/${postToDelete.authorUsername}`);
 }

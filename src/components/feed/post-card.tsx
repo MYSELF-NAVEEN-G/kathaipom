@@ -21,6 +21,7 @@ function CommentForm({ postId }: { postId: string }) {
     const [currentUser, setCurrentUser] = React.useState<{id: string, name: string} | null>(null);
 
     React.useEffect(() => {
+        // This code runs on the client after the component mounts
         const username = localStorage.getItem('userUsername');
         const name = localStorage.getItem('userName');
         if (username && name) {
@@ -28,15 +29,26 @@ function CommentForm({ postId }: { postId: string }) {
         }
     }, []);
 
-    if (!currentUser) return null;
+    const formRef = React.useRef<HTMLFormElement>(null);
+
+    const handleCommentSubmit = async (formData: FormData) => {
+        if (!currentUser) return;
+
+        // Manually append current user data to formData
+        formData.append('authorId', currentUser.id);
+        formData.append('authorName', currentUser.name);
+
+        await addComment(formData);
+        formRef.current?.reset();
+    }
+
+    if (!currentUser) return null; // Don't render the form if there's no user
 
     return (
-        <form action={addComment} className="flex items-center gap-2 px-4 pb-2">
+        <form ref={formRef} action={handleCommentSubmit} className="flex items-center gap-2 px-4 pb-2 pt-2 w-full">
             <Input type="hidden" name="postId" value={postId} />
-            <Input type="hidden" name="authorId" value={currentUser.id} />
-            <Input type="hidden" name="authorName" value={currentUser.name} />
             <Input name="comment" placeholder="Add a comment..." className="h-9" required />
-            <Button type="submit" size="icon" className="h-9 w-9">
+            <Button type="submit" size="icon" className="h-9 w-9 shrink-0">
                 <Send className="h-4 w-4" />
             </Button>
         </form>
@@ -108,7 +120,7 @@ export function PostCard({ post: story }: { post: Story & { reason?: string } })
                 {story.comments.map(comment => (
                     <div key={comment.id}>
                         <span className="font-semibold">{comment.authorName}</span>
-                        <p className="text-muted-foreground d-inline">{comment.content}</p>
+                        <p className="text-muted-foreground d-inline ml-2">{comment.content}</p>
                     </div>
                 ))}
                 </div>
