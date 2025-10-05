@@ -13,54 +13,9 @@ import { Suspense } from "react";
 export default async function FeedPage() {
   const posts = await getPosts();
 
-  let prioritizedFeed: PrioritizeFeedOutput = [];
-
-  // Only run AI prioritization if the API key is available AND there are posts
-  if (process.env.GEMINI_API_KEY && posts.length > 0) {
-    const aiInput: PrioritizeFeedInput = {
-      posts: posts.map((p) => ({
-        postId: p.id,
-        // Send only the first page to the AI to keep the prompt concise
-        content: Array.isArray(p.content) ? p.content[0] || '' : '',
-        authorId: p.authorId,
-        likes: p.likes,
-        comments: p.comments?.length || 0,
-      })),
-      userInterests: [
-        "modern art",
-        "minimalist photography",
-        "architecture",
-        "travel",
-        "design",
-      ],
-      userInteractionHistory: [
-        {
-          postId: "post-2",
-          interactionType: "like",
-          timestamp: new Date(Date.now() - 86400000 * 2).toISOString(),
-        },
-        {
-          postId: "post-5",
-          interactionType: "comment",
-          timestamp: new Date(Date.now() - 86400000 * 5).toISOString(),
-        },
-      ],
-    };
-
-    try {
-      prioritizedFeed = await prioritizeFeed(aiInput);
-    } catch (error) {
-      console.warn(
-        "AI feed prioritization failed. This may be due to a missing or invalid GEMINI_API_KEY. Falling back to chronological order.",
-        error
-      );
-      // If AI fails, we'll just use the default empty array, and the sort below will be chronological.
-      prioritizedFeed = [];
-    }
-  } else if (posts.length > 0) {
-     console.warn("GEMINI_API_KEY not found. Skipping AI feed prioritization. To enable, add your key to the .env file.");
-  }
-
+  // For performance, we are disabling the AI prioritization on every page load.
+  // We can re-enable this behind a user control later.
+  const prioritizedFeed: PrioritizeFeedOutput = [];
 
   const priorityMap = new Map(
     prioritizedFeed.map((p) => [
