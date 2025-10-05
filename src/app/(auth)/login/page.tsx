@@ -14,8 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { getUserByUsername } from "@/lib/data"; // Assume we can use this on client for demo
 import { useToast } from "@/hooks/use-toast";
+import { users } from "@/lib/users"; // Import mock data safely
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,10 +23,10 @@ export default function LoginPage() {
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  const handleSignIn = async () => {
+  const handleSignIn = () => {
     // In a real app, you'd have actual auth logic here.
-    // For now, we find a user by username to get their full data.
-    const user = await getUserByUsername(username);
+    // For now, we find a user by username from mock data.
+    const user = users.find(u => u.username === username);
 
     if (user && !user.isAdmin) {
       localStorage.setItem('userId', user.id);

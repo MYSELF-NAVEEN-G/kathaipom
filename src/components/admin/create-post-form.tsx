@@ -1,14 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from "lucide-react";
+import { Send, Plus, Trash2, GripVertical, ArrowUp, ArrowDown, ImagePlus, X } from "lucide-react";
 import { addStory } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { PlaceHolderImages, type ImagePlaceholder } from "@/lib/placeholder-images";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+
 
 type UserInfo = {
     id: string;
@@ -16,12 +28,60 @@ type UserInfo = {
     username: string;
 }
 
+function ImageSelector({ selectedImage, onSelect }: { selectedImage: ImagePlaceholder | null, onSelect: (image: ImagePlaceholder) => void }) {
+  const postImages = PlaceHolderImages.filter(img => img.id.startsWith('post-'));
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="w-full">
+            <ImagePlus className="mr-2 h-4 w-4" />
+            {selectedImage ? 'Change Cover Image' : 'Add Cover Image'}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Select a Cover Image</DialogTitle>
+        </DialogHeader>
+        <ScrollArea className="h-96">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
+          {postImages.map((image) => (
+            <DialogTrigger key={image.id} asChild>
+                <button
+                key={image.id}
+                onClick={() => onSelect(image)}
+                className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                >
+                <div className="aspect-square relative overflow-hidden rounded-lg">
+                    <Image
+                    src={image.imageUrl}
+                    alt={image.description}
+                    fill
+                    className={cn(
+                        "object-cover transition-transform duration-300 hover:scale-105",
+                        selectedImage?.id === image.id ? 'ring-2 ring-primary ring-offset-2' : ''
+                    )}
+                    data-ai-hint={image.imageHint}
+                    />
+                </div>
+                </button>
+            </DialogTrigger>
+          ))}
+        </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 export function CreatePostForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isWriter, setIsWriter] = React.useState(false);
   const [userInfo, setUserInfo] = React.useState<UserInfo | null>(null);
   const [pages, setPages] = useState<string[]>(['']);
+  const [selectedImage, setSelectedImage] = useState<ImagePlaceholder | null>(null);
   const formRef = React.useRef<HTMLFormElement>(null);
 
   React.useEffect(() => {
@@ -98,6 +158,7 @@ export function CreatePostForm() {
             authorId: userInfo.id,
             authorName: userInfo.name,
             authorUsername: userInfo.username,
+            imageId: selectedImage?.id,
         });
 
         toast({
@@ -107,6 +168,7 @@ export function CreatePostForm() {
 
         // Reset form
         setPages(['']);
+        setSelectedImage(null);
         formRef.current?.reset();
         
         // Redirect to the feed to see the new story
@@ -126,6 +188,24 @@ export function CreatePostForm() {
       <fieldset disabled={!isWriter}>
         <Card>
           <CardContent className="p-6 space-y-6">
+            <div className="grid gap-2">
+              <Label>Cover Image</Label>
+              {selectedImage && (
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                    <Image src={selectedImage.imageUrl} alt={selectedImage.description} fill className="object-cover" />
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 h-7 w-7"
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+              )}
+              <ImageSelector selectedImage={selectedImage} onSelect={setSelectedImage} />
+            </div>
              <div className="grid gap-4">
                  <Label>Your Story Pages</Label>
                  <div className="space-y-4">

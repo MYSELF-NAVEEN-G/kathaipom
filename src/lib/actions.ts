@@ -3,14 +3,17 @@
 import { revalidatePath } from 'next/cache';
 import type { Story, User } from './types';
 import { getPosts, writePostsToFile, getUsers, writeUsersToFile } from './data';
+import { PlaceHolderImages } from './placeholder-images';
 
 export async function addStory(storyData: {
   content: string[];
   authorId: string;
   authorName: string;
   authorUsername: string;
+  imageId?: string;
 }) {
   const stories = await getPosts();
+  const image = PlaceHolderImages.find(img => img.id === storyData.imageId);
 
   const newStory: Story = {
     id: `post-${Date.now()}`,
@@ -18,6 +21,7 @@ export async function addStory(storyData: {
     authorName: storyData.authorName,
     authorUsername: storyData.authorUsername,
     content: storyData.content,
+    image: image,
     likes: 0,
     comments: [],
     timestamp: new Date().toISOString(),
@@ -106,6 +110,7 @@ export async function followUser(followerId: string, followingId: string) {
         }
         await writeUsersToFile(users);
         revalidatePath(`/profile/${userToFollow.username}`);
+        revalidatePath(`/profile/${follower.username}`);
     }
 }
 
@@ -120,5 +125,6 @@ export async function unfollowUser(followerId: string, followingId: string) {
         
         await writeUsersToFile(users);
         revalidatePath(`/profile/${users[userToUnfollowIndex].username}`);
+        revalidatePath(`/profile/${users[followerIndex].username}`);
     }
 }

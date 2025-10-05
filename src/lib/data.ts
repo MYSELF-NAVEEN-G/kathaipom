@@ -1,7 +1,10 @@
+'use server';
+
 import { PlaceHolderImages } from "./placeholder-images";
 import type { User, Story } from "./types";
 import fs from 'fs';
 import path from 'path';
+import { users as mockUsers } from './users';
 
 const usersFilePath = path.join(process.cwd(), 'src', 'lib', 'users.json');
 const postsFilePath = path.join(process.cwd(), 'src', 'lib', 'posts.json');
@@ -10,43 +13,8 @@ const postsFilePath = path.join(process.cwd(), 'src', 'lib', 'posts.json');
 function readUsersFromFile(): User[] {
   try {
     if (!fs.existsSync(usersFilePath)) {
-      const initialUsers: User[] = [
-        {
-          id: "user-1",
-          name: "Admin User",
-          username: "nafadmin",
-          avatar: PlaceHolderImages.find((img) => img.id === "avatar-1")!,
-          bio: "The chief architect of the Kathaipom platform. Ensuring stories are shared and heard.",
-          coverImage: PlaceHolderImages.find((img) => img.id === "cover-1")!,
-          followers: [],
-          following: [],
-          isAdmin: true,
-        },
-        {
-          id: "user-2",
-          name: "Jane Doe",
-          username: "janedoe",
-          avatar: PlaceHolderImages.find((img) => img.id === "avatar-2")!,
-          bio: "Lover of fiction, coffee, and rainy days. Exploring the world one story at a time.",
-          coverImage: PlaceHolderImages.find((img) => img.id === "cover-2")!,
-          followers: [],
-          following: [],
-          isAdmin: false,
-        },
-        {
-          id: "user-3",
-          name: "John Smith",
-          username: "johnsmith",
-          avatar: PlaceHolderImages.find((img) => img.id === "avatar-3")!,
-          bio: "Documenting my adventures in technology, travel, and gastronomy. Based in NYC.",
-          coverImage: PlaceHolderImages.find((img) => img.id === "cover-3")!,
-          followers: [],
-          following: [],
-          isAdmin: false,
-        },
-      ];
-      writeUsersToFile(initialUsers);
-      return initialUsers;
+      writeUsersToFile(mockUsers);
+      return mockUsers;
     }
     const data = fs.readFileSync(usersFilePath, 'utf-8');
     return JSON.parse(data);

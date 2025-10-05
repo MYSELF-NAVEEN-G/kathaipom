@@ -14,8 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getUserByUsername } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { users } from '@/lib/users'; // Import mock data safely
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -23,10 +23,10 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleSignIn = async () => {
+  const handleSignIn = () => {
     // Super Admin check
     if (username.toLowerCase() === 'nafadmin' && password === 'nafstud') {
-      const adminUser = await getUserByUsername('nafadmin');
+      const adminUser = users.find(u => u.username === 'nafadmin');
       if (adminUser) {
         localStorage.setItem('userId', adminUser.id);
         localStorage.setItem('userRole', 'super-admin');
@@ -38,8 +38,8 @@ export default function AdminLoginPage() {
     }
 
     // For this prototype, any other login on this page is treated as a writer.
-    const user = await getUserByUsername(username);
-    if (user) {
+    const user = users.find(u => u.username === username);
+    if (user && user.isAdmin) {
         localStorage.setItem('userId', user.id);
         localStorage.setItem('userRole', 'writer');
         localStorage.setItem('userName', user.name);
@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
         toast({
             variant: "destructive",
             title: "Login Failed",
-            description: "Invalid username or password.",
+            description: "Invalid username or password for a writer account.",
         });
     }
   };
