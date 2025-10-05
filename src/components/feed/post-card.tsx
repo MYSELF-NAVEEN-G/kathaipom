@@ -7,12 +7,41 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Info } from "lucide-react";
+import { MoreHorizontal, Info, Send } from "lucide-react";
 import type { EnrichedPost } from "@/lib/types";
 import { PostActions } from "./post-actions";
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import React from "react";
+import { addComment } from "@/lib/actions";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
+function CommentForm({ postId }: { postId: string }) {
+    const [currentUser, setCurrentUser] = React.useState<{id: string, name: string} | null>(null);
+
+    React.useEffect(() => {
+        const username = localStorage.getItem('userUsername');
+        const name = localStorage.getItem('userName');
+        if (username && name) {
+            setCurrentUser({ id: username, name: name });
+        }
+    }, []);
+
+    if (!currentUser) return null;
+
+    return (
+        <form action={addComment} className="flex items-center gap-2 px-4 pb-2">
+            <Input type="hidden" name="postId" value={postId} />
+            <Input type="hidden" name="authorId" value={currentUser.id} />
+            <Input type="hidden" name="authorName" value={currentUser.name} />
+            <Input name="comment" placeholder="Add a comment..." className="h-9" required />
+            <Button type="submit" size="icon" className="h-9 w-9">
+                <Send className="h-4 w-4" />
+            </Button>
+        </form>
+    );
+}
 
 export function PostCard({ post }: { post: EnrichedPost }) {
   return (
@@ -61,10 +90,25 @@ export function PostCard({ post }: { post: EnrichedPost }) {
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start p-0 mt-auto">
-        <PostActions initialLikes={post.likes} commentsCount={post.comments?.length || 0} imageUrl={post.image?.imageUrl} />
-        <p className="px-4 pb-4 text-xs text-muted-foreground">
+        <PostActions postId={post.id} initialLikes={post.likes} commentsCount={post.comments?.length || 0} imageUrl={post.image?.imageUrl} />
+        <p className="px-4 pb-2 pt-1 text-xs text-muted-foreground">
           {formatDistanceToNow(new Date(post.timestamp), { addSuffix: true })}
         </p>
+        {post.comments && post.comments.length > 0 && (
+            <div className="w-full px-4 pb-2 text-sm">
+                <Separator className="my-2" />
+                <div className="space-y-2 max-h-24 overflow-y-auto">
+                {post.comments.map(comment => (
+                    <div key={comment.id}>
+                        <span className="font-semibold">{comment.authorName}</span>
+                        <p className="text-muted-foreground d-inline">{comment.content}</p>
+                    </div>
+                ))}
+                </div>
+            </div>
+        )}
+        <Separator />
+        <CommentForm postId={post.id} />
       </CardFooter>
     </Card>
   );

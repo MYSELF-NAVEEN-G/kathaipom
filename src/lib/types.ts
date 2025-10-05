@@ -13,17 +13,18 @@ export type User = {
 export type Comment = {
   id: string;
   authorId: string;
+  authorName: string;
   content: string;
   timestamp: string;
 };
 
 export type Post = {
-  id: string;
+  id:string;
   authorId: string;
   content: string;
   image?: ImagePlaceholder;
   likes: number;
-  comments?: Comment[];
+  comments: Comment[];
   timestamp: string;
 };
 
