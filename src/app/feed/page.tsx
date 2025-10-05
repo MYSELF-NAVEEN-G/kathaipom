@@ -21,7 +21,7 @@ export default async function FeedPage() {
       posts: posts.map((p) => ({
         postId: p.id,
         // Send only the first page to the AI to keep the prompt concise
-        content: Array.isArray(p.content) ? p.content[0] || '' : p.content,
+        content: Array.isArray(p.content) ? p.content[0] || '' : '',
         authorId: p.authorId,
         likes: p.likes,
         comments: p.comments?.length || 0,
