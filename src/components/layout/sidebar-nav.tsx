@@ -68,11 +68,11 @@ export function SidebarNav() {
   const writerMenuItems = [
     { href: '/feed', label: 'Feed Preview', icon: Home },
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/import', label: 'Import', icon: Github },
   ];
 
   const adminMenuItems = [
     ...writerMenuItems,
+    { href: '/admin/import', label: 'Import', icon: Github },
     { href: '#', label: 'User Management', icon: ShieldCheck }, // Placeholder
   ];
   
