@@ -89,6 +89,7 @@ const importFromGithubFlow = ai.defineFlow(
             likes: 0,
             comments: [],
             timestamp: new Date().toISOString(),
+            images: [],
         };
 
         existingStories.unshift(newStory);

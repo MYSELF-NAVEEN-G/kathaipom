@@ -58,6 +58,7 @@ function CommentForm({ postId }: { postId: string }) {
 export function PostCard({ post: story }: { post: Story & { reason?: string } }) {
   const avatarUrl = `https://picsum.photos/seed/${story.authorUsername}/100/100`;
   const firstPageContent = Array.isArray(story.content) ? story.content[0] : story.content;
+  const firstImage = (story.images && story.images.length > 0) ? story.images[0] : null;
 
 
   return (
@@ -84,20 +85,19 @@ export function PostCard({ post: story }: { post: Story & { reason?: string } })
                     </Tooltip>
                 </TooltipProvider>
             )}
-           <PostActions postId={story.id} initialLikes={story.likes} commentsCount={story.comments?.length || 0} imageUrl={story.image?.imageUrl} />
+           <PostActions postId={story.id} initialLikes={story.likes} commentsCount={story.comments?.length || 0} />
         </div>
 
       </CardHeader>
       <CardContent className="p-0 flex-1">
-        {story.image && (
+        {firstImage && (
             <div className="relative aspect-[4/5] w-full">
             <Image
-                src={story.image.imageUrl}
-                alt={story.image.description}
+                src={firstImage}
+                alt={"Story image"}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                data-ai-hint={story.image.imageHint}
             />
             </div>
         )}

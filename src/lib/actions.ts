@@ -1,19 +1,17 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Story, User } from './types';
+import type { Story } from './types';
 import { getPosts, writePostsToFile, getUsers, writeUsersToFile } from './data';
-import { PlaceHolderImages } from './placeholder-images';
 
 export async function addStory(storyData: {
   content: string[];
   authorId: string;
   authorName: string;
   authorUsername: string;
-  imageId?: string;
+  images?: string[];
 }) {
   const stories = await getPosts();
-  const image = PlaceHolderImages.find(img => img.id === storyData.imageId);
 
   const newStory: Story = {
     id: `post-${Date.now()}`,
@@ -21,7 +19,7 @@ export async function addStory(storyData: {
     authorName: storyData.authorName,
     authorUsername: storyData.authorUsername,
     content: storyData.content,
-    image: image,
+    images: storyData.images,
     likes: 0,
     comments: [],
     timestamp: new Date().toISOString(),

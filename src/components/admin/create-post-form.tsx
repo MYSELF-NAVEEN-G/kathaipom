@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -10,17 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Send, Plus, Trash2, GripVertical, ArrowUp, ArrowDown, ImagePlus, X } from "lucide-react";
 import { addStory } from "@/lib/actions";
 import { useRouter } from "next/navigation";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { PlaceHolderImages, type ImagePlaceholder } from "@/lib/placeholder-images";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-
+import { Input } from "@/components/ui/input";
 
 type UserInfo = {
     id: string;
@@ -28,61 +18,15 @@ type UserInfo = {
     username: string;
 }
 
-function ImageSelector({ selectedImage, onSelect }: { selectedImage: ImagePlaceholder | null, onSelect: (image: ImagePlaceholder) => void }) {
-  const postImages = PlaceHolderImages.filter(img => img.id.startsWith('post-'));
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
-            <ImagePlus className="mr-2 h-4 w-4" />
-            {selectedImage ? 'Change Cover Image' : 'Add Cover Image'}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>Select a Cover Image</DialogTitle>
-        </DialogHeader>
-        <ScrollArea className="h-96">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
-          {postImages.map((image) => (
-            <DialogTrigger key={image.id} asChild>
-                <button
-                key={image.id}
-                onClick={() => onSelect(image)}
-                className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
-                >
-                <div className="aspect-square relative overflow-hidden rounded-lg">
-                    <Image
-                    src={image.imageUrl}
-                    alt={image.description}
-                    fill
-                    className={cn(
-                        "object-cover transition-transform duration-300 hover:scale-105",
-                        selectedImage?.id === image.id ? 'ring-2 ring-primary ring-offset-2' : ''
-                    )}
-                    data-ai-hint={image.imageHint}
-                    />
-                </div>
-                </button>
-            </DialogTrigger>
-          ))}
-        </div>
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-
 export function CreatePostForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isWriter, setIsWriter] = React.useState(false);
   const [userInfo, setUserInfo] = React.useState<UserInfo | null>(null);
   const [pages, setPages] = useState<string[]>(['']);
-  const [selectedImage, setSelectedImage] = useState<ImagePlaceholder | null>(null);
+  const [images, setImages] = useState<string[]>([]); // Store images as data URIs
   const formRef = React.useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     const role = localStorage.getItem('userRole');
@@ -131,6 +75,41 @@ export function CreatePostForm() {
       setPages(newPages);
   }
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const newImages: string[] = [];
+    const promises = Array.from(files).map(file => {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          resolve(reader.result as string);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(promises)
+      .then(base64Images => {
+        setImages(prev => [...prev, ...base64Images]);
+      })
+      .catch(error => {
+        console.error("Error reading files:", error);
+        toast({
+          variant: "destructive",
+          title: "Image Upload Failed",
+          description: "There was an error reading one or more image files.",
+        });
+      });
+  };
+  
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+
   const handleFormAction = async () => {
     if (!isWriter || !userInfo) {
         toast({
@@ -158,7 +137,7 @@ export function CreatePostForm() {
             authorId: userInfo.id,
             authorName: userInfo.name,
             authorUsername: userInfo.username,
-            imageId: selectedImage?.id,
+            images: images,
         });
 
         toast({
@@ -168,7 +147,7 @@ export function CreatePostForm() {
 
         // Reset form
         setPages(['']);
-        setSelectedImage(null);
+        setImages([]);
         formRef.current?.reset();
         
         // Redirect to the feed to see the new story
@@ -188,24 +167,39 @@ export function CreatePostForm() {
       <fieldset disabled={!isWriter}>
         <Card>
           <CardContent className="p-6 space-y-6">
-            <div className="grid gap-2">
-              <Label>Cover Image</Label>
-              {selectedImage && (
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-                    <Image src={selectedImage.imageUrl} alt={selectedImage.description} fill className="object-cover" />
-                    <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 h-7 w-7"
-                        onClick={() => setSelectedImage(null)}
-                    >
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
-              )}
-              <ImageSelector selectedImage={selectedImage} onSelect={setSelectedImage} />
-            </div>
+             <div className="grid gap-2">
+                <Label>Story Images</Label>
+                <Input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    className="hidden"
+                />
+                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <ImagePlus className="mr-2 h-4 w-4" />
+                    Upload Images
+                </Button>
+                {images.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-4">
+                        {images.map((imgSrc, index) => (
+                            <div key={index} className="relative group aspect-square">
+                                <Image src={imgSrc} alt={`Uploaded image ${index + 1}`} fill className="object-cover rounded-lg" />
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => removeImage(index)}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+             </div>
              <div className="grid gap-4">
                  <Label>Your Story Pages</Label>
                  <div className="space-y-4">
