@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import {
   Home,
   Search,
@@ -7,7 +7,7 @@ import {
   LogOut,
   Settings,
   Bell,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   SidebarHeader,
   SidebarContent,
@@ -17,19 +17,19 @@ import {
   SidebarMenuButton,
   SidebarInput,
   SidebarSeparator,
-} from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Logo } from "@/components/logo";
-import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
+} from '@/components/ui/sidebar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Logo } from '@/components/logo';
+import { usePathname } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 
 // Mock current user data
 const currentUser = {
-  name: "Admin User",
-  username: "admin",
-  avatar: "https://picsum.photos/seed/avatar1/100/100",
+  name: 'Admin User',
+  username: 'admin',
+  avatar: 'https://picsum.photos/seed/avatar1/100/100',
   isAdmin: true,
 };
 
@@ -38,10 +38,10 @@ export function SidebarNav() {
   const isMobile = useIsMobile();
 
   const menuItems = [
-    { href: "/feed", label: "Feed", icon: Home },
-    { href: "#", label: "Search", icon: Search },
-    { href: "#", label: "Notifications", icon: Bell },
-    { href: "#", label: "Profile", icon: UserIcon },
+    { href: '/feed', label: 'Feed', icon: Home },
+    { href: '#', label: 'Search', icon: Search },
+    { href: '#', label: 'Notifications', icon: Bell },
+    { href: '#', label: 'Profile', icon: UserIcon },
   ];
 
   return (
@@ -60,16 +60,16 @@ export function SidebarNav() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <Link href={item.href} passHref legacyBehavior>
-                <SidebarMenuButton
-                    as="a"
-                    isActive={pathname === item.href}
-                    tooltip={item.label}
-                >
-                    <item.icon />
-                    <span>{item.label}</span>
-                </SidebarMenuButton>
-              </Link>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                tooltip={item.label}
+              >
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -89,7 +89,9 @@ export function SidebarNav() {
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
             <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                <Link href="/login"><LogOut /></Link>
+              <Link href="/login">
+                <LogOut />
+              </Link>
             </Button>
           </div>
         </div>
