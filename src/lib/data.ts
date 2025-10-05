@@ -10,8 +10,10 @@ let users: User[] = [
     name: "Admin User",
     username: "nafadmin",
     avatar: PlaceHolderImages.find((img) => img.id === "avatar-1")!,
-    followers: 1250,
-    following: 250,
+    bio: "The chief architect of the Kathaipom platform. Ensuring stories are shared and heard.",
+    coverImage: PlaceHolderImages.find((img) => img.id === "cover-1")!,
+    followers: ["user-2", "user-3"],
+    following: ["user-2", "user-3"],
     isAdmin: true,
   },
   {
@@ -19,8 +21,10 @@ let users: User[] = [
     name: "Jane Doe",
     username: "janedoe",
     avatar: PlaceHolderImages.find((img) => img.id === "avatar-2")!,
-    followers: 850,
-    following: 120,
+    bio: "Lover of fiction, coffee, and rainy days. Exploring the world one story at a time.",
+    coverImage: PlaceHolderImages.find((img) => img.id === "cover-2")!,
+    followers: ["user-1"],
+    following: ["user-1", "user-3"],
     isAdmin: false,
   },
   {
@@ -28,8 +32,10 @@ let users: User[] = [
     name: "John Smith",
     username: "johnsmith",
     avatar: PlaceHolderImages.find((img) => img.id === "avatar-3")!,
-    followers: 430,
-    following: 90,
+    bio: "Documenting my adventures in technology, travel, and gastronomy. Based in NYC.",
+    coverImage: PlaceHolderImages.find((img) => img.id === "cover-3")!,
+    followers: ["user-1", "user-2"],
+    following: ["user-1"],
     isAdmin: false,
   },
 ];
@@ -62,9 +68,21 @@ export async function getUsers(): Promise<User[]> {
   return Promise.resolve(users);
 }
 
+export async function getUserByUsername(username: string): Promise<User | undefined> {
+    const allUsers = await getUsers();
+    return Promise.resolve(allUsers.find(u => u.username === username));
+}
+
+
 export async function getPosts(): Promise<Story[]> {
   return Promise.resolve(readPostsFromFile());
 }
+
+export async function getPostsByUsername(username: string): Promise<Story[]> {
+    const allPosts = await getPosts();
+    return Promise.resolve(allPosts.filter(p => p.authorUsername === username));
+}
+
 
 export async function getCommentsForPost(postId: string): Promise<Comment[]> {
     const posts = readPostsFromFile();

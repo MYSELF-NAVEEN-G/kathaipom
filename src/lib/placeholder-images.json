@@ -31,6 +31,24 @@
       "imageHint": "man looking"
     },
     {
+      "id": "cover-1",
+      "description": "Abstract blue and pink background",
+      "imageUrl": "https://images.unsplash.com/photo-1557683316-9a7060991636?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzOTY3MDl8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGJhY2tncm91bmR8ZW58MHx8fHwxNjE2MTU4MjY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract background"
+    },
+    {
+      "id": "cover-2",
+      "description": "Bookshelf in a cozy library",
+      "imageUrl": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzOTY3MDl8MHwxfHNlYXJjaHwxfHxsaWJyYXJ5fGVufDB8fHx8MTYxNjE1ODMxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "library bookshelf"
+    },
+    {
+      "id": "cover-3",
+      "description": "World map on a rustic wooden wall",
+      "imageUrl": "https://images.unsplash.com/photo-1504999335295-e23f1a8c459c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzOTY3MDl8MHwxfHNlYXJjaHwzfHx0cmF2ZWwlMjBtYXB8ZW58MHx8fHwxNjE2MTU4MzQyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "travel map"
+    },
+    {
       "id": "post-1",
       "description": "Post image of a modern building",
       "imageUrl": "https://images.unsplash.com/photo-1615406020658-6c4b805f1f30?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtb2Rlcm4lMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzU5NTY2NjU5fDA&ixlib=rb-4.1.0&q=80&w=1080",

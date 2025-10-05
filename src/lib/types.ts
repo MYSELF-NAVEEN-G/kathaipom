@@ -5,8 +5,10 @@ export type User = {
   name: string;
   username: string;
   avatar: ImagePlaceholder;
-  followers: number;
-  following: number;
+  bio: string;
+  coverImage: ImagePlaceholder;
+  followers: string[]; // Array of user IDs
+  following: string[]; // Array of user IDs
   isAdmin: boolean;
 };
 

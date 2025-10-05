@@ -62,12 +62,13 @@ export function SidebarNav() {
     { href: '/feed', label: 'Feed', icon: Home },
     { href: '#', label: 'Search', icon: Search },
     { href: '#', label: 'Notifications', icon: Bell },
-    { href: '#', label: 'Profile', icon: UserIcon },
+    { href: currentUser ? `/profile/${currentUser.username}` : '#', label: 'Profile', icon: UserIcon },
   ];
 
   const writerMenuItems = [
     { href: '/feed', label: 'Feed Preview', icon: Home },
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+     { href: currentUser ? `/profile/${currentUser.username}` : '#', label: 'Profile', icon: UserIcon },
   ];
 
   const adminMenuItems = [
