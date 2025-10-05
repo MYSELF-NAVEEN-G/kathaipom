@@ -5,8 +5,10 @@ import type { User } from '@/lib/types';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { UserPlus, UserCheck, Edit } from 'lucide-react';
+import { UserPlus, UserCheck, Edit, Image as ImageIcon, FileText } from 'lucide-react';
 import { followUser, unfollowUser } from '@/lib/actions';
+import { useAuth } from '@/hooks/use-auth';
+
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
@@ -19,19 +21,10 @@ function Stat({ label, value }: { label: string; value: number }) {
 
 export function ProfileHeader({ user, postsCount }: { user: User, postsCount: number }) {
     const [isPending, startTransition] = useTransition();
-    const [currentUser, setCurrentUser] = React.useState<{id: string, username: string} | null>(null);
-
-    React.useEffect(() => {
-        const currentId = localStorage.getItem('userId');
-        const currentUsername = localStorage.getItem('userUsername');
-        if (currentId && currentUsername) {
-            setCurrentUser({ id: currentId, username: currentUsername });
-        }
-    }, []);
+    const { user: currentUser } = useAuth();
 
     const isOwnProfile = currentUser?.id === user.id;
 
-    // Check if the current user is in the displayed user's followers list
     const isFollowing = React.useMemo(() => {
         if (!currentUser) return false;
         return user.followers.includes(currentUser.id);
@@ -84,10 +77,20 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
                             </Button>
                         )}
                         {currentUser && isOwnProfile && (
-                            <Button variant="outline">
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Profile
-                            </Button>
+                             <div className="flex items-center gap-2">
+                                <Button variant="outline" size="sm">
+                                    <ImageIcon className="mr-2 h-4 w-4" />
+                                    Edit Cover
+                                </Button>
+                                 <Button variant="outline" size="sm">
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Edit Bio
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit Profile
+                                </Button>
+                            </div>
                         )}
                     </div>
                 </div>

@@ -1,9 +1,9 @@
 "use client";
 
-import type { Story } from "@/lib/types";
+import type { EnrichedStory } from "@/lib/types";
 import { PostCard } from "@/components/feed/post-card";
 
-export function UserPostFeed({ stories }: { stories: Story[] }) {
+export function UserPostFeed({ stories }: { stories: EnrichedStory[] }) {
   if (stories.length === 0) {
     return (
       <div className="text-center py-16">

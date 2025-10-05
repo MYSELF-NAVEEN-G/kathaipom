@@ -1,66 +1,56 @@
-'use server';
-
-import { PlaceHolderImages } from "./placeholder-images";
-import type { User, Story } from "./types";
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { users as mockUsers } from './users';
+import type { User, Story, EnrichedStory } from './types';
 
 const usersFilePath = path.join(process.cwd(), 'src', 'lib', 'users.json');
 const postsFilePath = path.join(process.cwd(), 'src', 'lib', 'posts.json');
 
-
-function readUsersFromFile(): User[] {
+async function readUsersFromFile(): Promise<User[]> {
   try {
-    if (!fs.existsSync(usersFilePath)) {
-      writeUsersToFile(mockUsers);
-      return mockUsers;
-    }
-    const data = fs.readFileSync(usersFilePath, 'utf-8');
+    await fs.access(usersFilePath);
+    const data = await fs.readFile(usersFilePath, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    console.error("Error reading users.json:", error);
-    return [];
+    // If the file doesn't exist, create it with mock data
+    await writeUsersToFile(mockUsers);
+    return mockUsers;
   }
 }
 
-export async function writeUsersToFile(users: User[]) {
+export async function writeUsersToFile(users: User[]): Promise<void> {
   try {
-    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
+    await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
   } catch (error) {
     console.error("Error writing to users.json:", error);
   }
 }
 
-
-function readPostsFromFile(): Story[] {
+async function readPostsFromFile(): Promise<Story[]> {
   try {
-    if (!fs.existsSync(postsFilePath)) {
-      fs.writeFileSync(postsFilePath, JSON.stringify([], null, 2), 'utf-8');
-      return [];
-    }
-    
-    const data = fs.readFileSync(postsFilePath, 'utf-8');
+    await fs.access(postsFilePath);
+    const data = await fs.readFile(postsFilePath, 'utf-8');
     if (data.trim() === '') return [];
     return JSON.parse(data);
   } catch (error) {
-    console.error("Error reading or parsing posts.json:", error);
+     // If the file doesn't exist, create it with an empty array
+    await writePostsToFile([]);
     return [];
   }
 }
 
-export async function writePostsToFile(posts: Story[]) {
+export async function writePostsToFile(posts: Story[]): Promise<void> {
   try {
-    fs.writeFileSync(postsFilePath, JSON.stringify(posts, null, 2), 'utf-8');
+    await fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf-8');
   } catch (error) {
     console.error("Error writing to posts.json:", error);
   }
 }
 
-// Functions to interact with the data
+// -- Data Access Functions --
 
 export async function getUsers(): Promise<User[]> {
-  return Promise.resolve(readUsersFromFile());
+  return await readUsersFromFile();
 }
 
 export async function getUserByUsername(username: string): Promise<User | undefined> {
@@ -68,11 +58,10 @@ export async function getUserByUsername(username: string): Promise<User | undefi
     const user = allUsers.find(u => u.username === username);
     if (!user) return undefined;
     
-    // Dynamically calculate followers and following based on the entire user list
+    // Dynamically calculate followers based on the entire user list
     const followers = allUsers.filter(u => u.following.includes(user.id)).map(u => u.id);
-    const following = user.following; // This is already stored correctly on the user object
-
-    return { ...user, followers, following };
+    
+    return { ...user, followers, following: user.following || [] };
 }
 
 export async function getUserById(id: string): Promise<User | undefined> {
@@ -81,15 +70,40 @@ export async function getUserById(id: string): Promise<User | undefined> {
 }
 
 
-export async function getPosts(): Promise<Story[]> {
-  return Promise.resolve(readPostsFromFile());
+export async function getPosts(): Promise<EnrichedStory[]> {
+    const posts = await readPostsFromFile();
+    const users = await getUsers();
+    
+    return posts.map(post => {
+        const author = users.find(u => u.id === post.authorId);
+        return {
+            ...post,
+            // Return a fallback author if not found to prevent crashes
+            author: author || {
+                id: 'unknown',
+                name: 'Unknown Author',
+                username: 'unknown',
+                avatar: { id: 'avatar-1', imageUrl: '', description: '', imageHint: '' },
+                bio: '',
+                coverImage: { id: 'cover-1', imageUrl: '', description: '', imageHint: '' },
+                followers: [],
+                following: [],
+                isAdmin: false,
+            }
+        };
+    });
 }
 
-export async function getPostsByUsername(username: string): Promise<Story[]> {
+export async function getPostsByUsername(username: string): Promise<EnrichedStory[]> {
     const allPosts = await getPosts();
     const user = await getUserByUsername(username);
     if (!user) return [];
-    return Promise.resolve(allPosts.filter(p => p.authorId === user.id));
+    return allPosts.filter(p => p.authorId === user.id);
+}
+
+export async function getLikedPostsByUserId(userId: string): Promise<EnrichedStory[]> {
+    const allPosts = await getPosts();
+    return allPosts.filter(p => p.likedBy && p.likedBy.includes(userId));
 }
 
 export async function addUser(user: Omit<User, 'id'>): Promise<User> {

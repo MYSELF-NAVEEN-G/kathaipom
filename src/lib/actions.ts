@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import type { Story, Comment } from './types';
 import { getPosts, writePostsToFile, getUsers, writeUsersToFile } from './data';
+import { auth } from './auth';
 
 export async function addStory(storyData: {
   content: string[];
@@ -21,6 +22,7 @@ export async function addStory(storyData: {
     content: storyData.content,
     images: storyData.images,
     likes: 0,
+    likedBy: [],
     comments: [],
     timestamp: new Date().toISOString(),
   };
@@ -35,15 +37,27 @@ export async function addStory(storyData: {
 }
 
 export async function likeStory(postId: string) {
+    const { user } = await auth();
+    if (!user) return; // Or throw an error
+
     const posts = await getPosts();
     const postIndex = posts.findIndex(p => p.id === postId);
 
     if (postIndex !== -1) {
-        posts[postIndex].likes += 1;
-        await writePostsToFile(posts);
-        revalidatePath('/feed');
-        if (posts[postIndex].authorUsername) {
-            revalidatePath(`/profile/${posts[postIndex].authorUsername}`);
+        const post = posts[postIndex];
+        // Prevent multiple likes from the same user
+        if (!post.likedBy) {
+            post.likedBy = [];
+        }
+        if (!post.likedBy.includes(user.id)) {
+            post.likes += 1;
+            post.likedBy.push(user.id);
+            await writePostsToFile(posts);
+            revalidatePath('/feed');
+            if (post.authorUsername) {
+                revalidatePath(`/profile/${post.authorUsername}`);
+            }
+             revalidatePath(`/profile/${user.username}`);
         }
     }
 }
@@ -51,10 +65,9 @@ export async function likeStory(postId: string) {
 export async function addComment(formData: FormData) {
     const postId = formData.get('postId') as string;
     const content = formData.get('comment') as string;
-    const authorId = formData.get('authorId') as string;
-    const authorName = formData.get('authorName') as string;
-
-    if (!postId || !content || !authorId || !authorName) {
+    
+    const { user } = await auth();
+    if (!user || !postId || !content) {
         return;
     }
 
@@ -64,8 +77,8 @@ export async function addComment(formData: FormData) {
     if (postIndex !== -1) {
         const newComment: Comment = {
             id: `comment-${Date.now()}`,
-            authorId,
-            authorName,
+            authorId: user.id,
+            authorName: user.name,
             content,
             timestamp: new Date().toISOString(),
         };

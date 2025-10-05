@@ -26,8 +26,9 @@ export type Story = {
   authorName: string;
   authorUsername: string;
   content: string[];
-  images?: string[]; // Changed from image: ImagePlaceholder
+  images?: string[]; // Array of data URIs
   likes: number;
+  likedBy: string[]; // Array of user IDs who liked the post
   comments: Comment[];
   timestamp: string;
 };
