@@ -23,7 +23,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             {isMobile && (
                 <header className="flex items-center p-4 border-b">
                     <SidebarTrigger />
-                    <h1 className="font-headline font-bold text-lg ml-4">Kathaipom Social</h1>
+                    <h1 className="font-headline font-bold text-lg ml-4">Kathaipom</h1>
                 </header>
             )}
           <div className="flex-1 overflow-y-auto">

@@ -11,7 +11,7 @@ export default function LandingPage() {
             <Logo size="medium" />
         </div>
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-headline font-bold tracking-tight mb-4">Welcome to Kathaipom Social</h1>
+        <h1 className="text-5xl font-headline font-bold tracking-tight mb-4">Welcome to Kathaipom</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             A premium social experience. Connect, share, and discover content tailored just for you.
         </p>

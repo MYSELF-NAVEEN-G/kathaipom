@@ -18,7 +18,7 @@ export function Logo({ className, size = "medium" }: LogoProps) {
         className
       )}
     >
-      Kathaipom Social
+      Kathaipom
     </h1>
   );
 }
