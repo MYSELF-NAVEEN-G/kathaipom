@@ -24,7 +24,7 @@ function readUsersFromFile(): User[] {
   }
 }
 
-export function writeUsersToFile(users: User[]) {
+export async function writeUsersToFile(users: User[]) {
   try {
     fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
   } catch (error) {
@@ -49,7 +49,7 @@ function readPostsFromFile(): Story[] {
   }
 }
 
-export function writePostsToFile(posts: Story[]) {
+export async function writePostsToFile(posts: Story[]) {
   try {
     fs.writeFileSync(postsFilePath, JSON.stringify(posts, null, 2), 'utf-8');
   } catch (error) {
@@ -99,6 +99,6 @@ export async function addUser(user: Omit<User, 'id'>): Promise<User> {
         id: `user-${Date.now()}`
     };
     const updatedUsers = [...users, newUser];
-    writeUsersToFile(updatedUsers);
+    await writeUsersToFile(updatedUsers);
     return newUser;
 }
