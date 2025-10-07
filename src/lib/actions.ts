@@ -94,7 +94,7 @@ export async function addComment(formData: FormData) {
 
 export async function deleteStory(postId: string) {
     const { user } = await auth();
-    if (!user || user.username !== 'nafadmin') {
+    if (!user || !user.isAdmin) {
       throw new Error('Permission denied');
     }
 

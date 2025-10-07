@@ -45,7 +45,8 @@ export function PostActions({
   };
 
   const handleDelete = () => {
-    if (userRole !== 'super-admin') {
+    const isAdmin = userRole === 'super-admin' || userRole === 'writer';
+    if (!isAdmin) {
       toast({
         variant: "destructive",
         title: "Permission Denied",
@@ -101,7 +102,7 @@ export function PostActions({
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                {userRole === 'super-admin' && (
+                {(userRole === 'super-admin' || userRole === 'writer') && (
                     <DropdownMenuItem
                         className="text-destructive focus:text-destructive focus:bg-destructive/10"
                         onClick={handleDelete}
