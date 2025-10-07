@@ -103,7 +103,6 @@ export async function deleteStory(postId: string) {
       throw new Error('You must be logged in to delete a story.');
     }
 
-    // Re-fetch the user from the source of truth to ensure permissions are up-to-date
     const currentUser = await getUserById(authUser.id);
     if (!currentUser || !currentUser.isAdmin) {
          throw new Error('Permission denied. You do not have admin privileges.');
@@ -170,7 +169,6 @@ export async function unfollowUser(followingId: string) {
 
 export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     const users = await getUsers();
-    // Check for username conflict
     if (user.username) {
         const existingUser = users.find(u => u.username.toLowerCase() === user.username.toLowerCase());
         if (existingUser) {
@@ -186,7 +184,7 @@ export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     return newUser;
 }
 
-export async function updateUser(data: Partial<Pick<User, 'name' | 'bio'> & { avatar?: ImagePlaceholder, coverImage?: ImagePlaceholder }>) {
+export async function updateUser(data: Partial<Pick<User, 'name' | 'bio' | 'username'> & { avatar?: ImagePlaceholder, coverImage?: ImagePlaceholder }>) {
     const { user } = await auth();
     if (!user) {
         throw new Error('Permission denied');
@@ -199,15 +197,12 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio'> & { av
         throw new Error('User not found');
     }
 
-    // Check for username conflict if the username is being changed.
-    // Note: The UI for this is disabled, but this is a good server-side safeguard.
-    // if (data.username && data.username !== users[userIndex].username) {
-    //     const existingUser = users.find(u => u.username.toLowerCase() === data.username?.toLowerCase());
-    //     if (existingUser) {
-    //         throw new Error('Username is already taken.');
-    //     }
-    // }
-
+    if (data.username && data.username !== users[userIndex].username) {
+        const existingUser = users.find(u => u.username.toLowerCase() === data.username?.toLowerCase());
+        if (existingUser) {
+            throw new Error('Username is already taken.');
+        }
+    }
 
     const updatedUser = {
         ...users[userIndex],
@@ -217,7 +212,6 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio'> & { av
 
     await writeUsersToFile(users);
 
-    // If name or avatar changed, update all posts by this user
     if (data.name || data.avatar) {
         const posts = await getPosts();
         const updatedPosts = posts.map(post => {
@@ -238,5 +232,36 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio'> & { av
     }
 
     revalidatePath(`/profile/${user.username}`);
+    if (data.username && data.username !== user.username) {
+         revalidatePath(`/profile/${data.username}`);
+    }
     revalidatePath('/feed'); 
 }
+
+
+export async function deleteUserAndPosts(userId: string) {
+    const { user: authUser } = await auth();
+    if (!authUser || !authUser.isAdmin) {
+        throw new Error("Permission denied. You must be an admin to delete a user.");
+    }
+    if (authUser.id === userId) {
+        throw new Error("Admins cannot delete their own accounts.");
+    }
+
+    // Remove user
+    const users = await getUsers();
+    const updatedUsers = users.filter(u => u.id !== userId);
+    if (users.length === updatedUsers.length) {
+        throw new Error("User not found.");
+    }
+    await writeUsersToFile(updatedUsers);
+
+    // Remove user's posts
+    const posts = await getPosts();
+    const updatedPosts = posts.filter(p => p.authorId !== userId);
+    await writePostsToFile(updatedPosts);
+
+    revalidatePath('/admin/users');
+    revalidatePath('/feed');
+}
+

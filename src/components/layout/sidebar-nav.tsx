@@ -9,7 +9,7 @@ import {
   Bell,
   LayoutDashboard,
   Github,
-  ShieldCheck,
+  Users,
 } from 'lucide-react';
 import {
   SidebarHeader,
@@ -58,7 +58,7 @@ export function SidebarNav() {
     } else {
         setCurrentUser(null);
     }
-  }, [authUser]); // Only depends on authUser now
+  }, [authUser]);
 
   const userMenuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
@@ -76,17 +76,13 @@ export function SidebarNav() {
   const adminMenuItems = [
     ...writerMenuItems,
     { href: '/admin/import', label: 'Import', icon: Github },
-    { href: '#', label: 'User Management', icon: ShieldCheck }, // Placeholder
+    { href: '/admin/users', label: 'User Management', icon: Users },
   ];
   
   const handleLogout = () => {
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userUsername');
-    // Also clear the session cookie
+    localStorage.clear();
     document.cookie = 'userId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    // Force a reload to clear all state and redirect to home
+    window.dispatchEvent(new Event('login'));
     window.location.href = '/';
   }
 
