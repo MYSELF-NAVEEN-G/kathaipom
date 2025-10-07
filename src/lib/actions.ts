@@ -97,7 +97,7 @@ export async function addComment(formData: FormData) {
     }
 }
 
-export async function deleteStory(postId: string): Promise<{ success: boolean }> {
+export async function deleteStory(postId: string) {
     const { user } = await auth();
     if (!user || !user.isAdmin) {
       throw new Error('Permission denied');
@@ -117,7 +117,6 @@ export async function deleteStory(postId: string): Promise<{ success: boolean }>
     if (postToDelete.authorUsername) {
         revalidatePath(`/profile/${postToDelete.authorUsername}`);
     }
-    return { success: true };
 }
 
 export async function followUser(followingId: string) {
