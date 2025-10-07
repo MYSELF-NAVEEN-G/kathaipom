@@ -24,16 +24,8 @@ export function ProfileHeader({ user, postsCount }: { user: User, postsCount: nu
     const [isPending, startTransition] = useTransition();
     const { user: currentUser } = useAuth();
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [isOwnProfile, setIsOwnProfile] = useState(false);
-
-    useEffect(() => {
-        if (currentUser && user) {
-            setIsOwnProfile(currentUser.id === user.id);
-        } else {
-            setIsOwnProfile(false);
-        }
-    }, [currentUser, user]);
-
+    
+    const isOwnProfile = currentUser?.id === user.id;
 
     const isFollowing = React.useMemo(() => {
         if (!currentUser || !user.followers) return false;

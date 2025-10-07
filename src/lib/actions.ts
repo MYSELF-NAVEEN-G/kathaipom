@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Story, Comment, User, ImagePlaceholder, EnrichedStory } from './types';
+import type { Story, Comment, User, ImagePlaceholder } from './types';
 import { getPosts, writePostsToFile, getUsers, writeUsersToFile, getUserById } from './data';
 import { auth } from './auth';
 
@@ -18,9 +18,8 @@ export async function addStory(storyData: {
     throw new Error('Author not found');
   }
 
-  const newStory: EnrichedStory = {
+  const newStory: Story = {
     id: `post-${Date.now()}`,
-    author,
     authorId: storyData.authorId,
     authorName: storyData.authorName,
     authorUsername: storyData.authorUsername,
@@ -97,30 +96,35 @@ export async function addComment(formData: FormData) {
     }
 }
 
-export async function deleteStory(postId: string) {
-    const { user: authUser } = await auth();
-    if (!authUser) {
-      throw new Error('You must be logged in to delete a story.');
-    }
+export async function deleteStory(postId: string): Promise<{ success: boolean; message?: string }> {
+    try {
+        const { user: authUser } = await auth();
+        if (!authUser) {
+            throw new Error('You must be logged in to delete a story.');
+        }
 
-    const currentUser = await getUserById(authUser.id);
-    if (!currentUser || !currentUser.isAdmin) {
-         throw new Error('Permission denied. You do not have admin privileges.');
-    }
+        const currentUser = await getUserById(authUser.id);
+        if (!currentUser || !currentUser.isAdmin) {
+            throw new Error('Permission denied. You do not have admin privileges.');
+        }
 
-    const posts = await getPosts();
-    const postToDelete = posts.find(p => p.id === postId);
+        const posts = await getPosts();
+        const postToDelete = posts.find(p => p.id === postId);
 
-    if (!postToDelete) {
-      throw new Error('Story not found');
-    }
-    
-    const updatedPosts = posts.filter(p => p.id !== postId);
-    await writePostsToFile(updatedPosts);
+        if (!postToDelete) {
+            throw new Error('Story not found');
+        }
+        
+        const updatedPosts = posts.filter(p => p.id !== postId);
+        await writePostsToFile(updatedPosts);
 
-    revalidatePath('/feed');
-    if (postToDelete.authorUsername) {
-        revalidatePath(`/profile/${postToDelete.authorUsername}`);
+        revalidatePath('/feed');
+        if (postToDelete.authorUsername) {
+            revalidatePath(`/profile/${postToDelete.authorUsername}`);
+        }
+        return { success: true };
+    } catch(error: any) {
+        return { success: false, message: error.message };
     }
 }
 
@@ -197,12 +201,13 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio' | 'user
         throw new Error('User not found');
     }
 
-    if (data.username && data.username !== users[userIndex].username) {
-        const existingUser = users.find(u => u.username.toLowerCase() === data.username?.toLowerCase());
-        if (existingUser) {
-            throw new Error('Username is already taken.');
-        }
-    }
+    // This logic is now handled in the dialog by disabling the input
+    // if (data.username && data.username !== users[userIndex].username) {
+    //     const existingUser = users.find(u => u.username.toLowerCase() === data.username?.toLowerCase());
+    //     if (existingUser) {
+    //         throw new Error('Username is already taken.');
+    //     }
+    // }
 
     const updatedUser = {
         ...users[userIndex],
@@ -219,11 +224,6 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio' | 'user
                 return {
                     ...post,
                     authorName: updatedUser.name,
-                    author: {
-                        ...(post.author as User),
-                        name: updatedUser.name,
-                        avatar: updatedUser.avatar,
-                    }
                 };
             }
             return post;
@@ -232,28 +232,30 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio' | 'user
     }
 
     revalidatePath(`/profile/${user.username}`);
-    if (data.username && data.username !== user.username) {
-         revalidatePath(`/profile/${data.username}`);
-    }
     revalidatePath('/feed'); 
 }
 
 
 export async function deleteUserAndPosts(userId: string) {
     const { user: authUser } = await auth();
-    if (!authUser || !authUser.isAdmin) {
+    const currentUser = authUser ? await getUserById(authUser.id) : null;
+    if (!currentUser || !currentUser.isAdmin) {
         throw new Error("Permission denied. You must be an admin to delete a user.");
     }
-    if (authUser.id === userId) {
+    if (currentUser.id === userId) {
         throw new Error("Admins cannot delete their own accounts.");
     }
 
     // Remove user
     const users = await getUsers();
-    const updatedUsers = users.filter(u => u.id !== userId);
-    if (users.length === updatedUsers.length) {
-        throw new Error("User not found.");
+    const userToDelete = users.find(u => u.id === userId);
+
+    if (!userToDelete) {
+         throw new Error("User not found.");
     }
+
+    const updatedUsers = users.filter(u => u.id !== userId);
+    
     await writeUsersToFile(updatedUsers);
 
     // Remove user's posts
@@ -264,4 +266,3 @@ export async function deleteUserAndPosts(userId: string) {
     revalidatePath('/admin/users');
     revalidatePath('/feed');
 }
-

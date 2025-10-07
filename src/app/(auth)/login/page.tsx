@@ -51,7 +51,7 @@ export default function LoginPage() {
           toast({
             variant: "destructive",
             title: "Login Failed",
-            description: "Invalid username, password, or you might be a writer.",
+            description: "Invalid username, password, or you might be an admin.",
           })
         }
     } catch (error) {
