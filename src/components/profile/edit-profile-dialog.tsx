@@ -171,7 +171,6 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
                 <FormControl>
                 <Input placeholder="Your username" value={user.username} disabled />
                 </FormControl>
-                <FormMessage />
             </FormItem>
             <FormField
               control={form.control}

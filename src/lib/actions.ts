@@ -188,7 +188,7 @@ export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     return newUser;
 }
 
-export async function updateUser(data: Partial<Pick<User, 'name' | 'bio' | 'username'> & { avatar?: ImagePlaceholder, coverImage?: ImagePlaceholder }>) {
+export async function updateUser(data: Partial<Pick<User, 'name' | 'bio' | 'avatar' | 'coverImage'>>) {
     const { user } = await auth();
     if (!user) {
         throw new Error('Permission denied');
@@ -200,14 +200,6 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio' | 'user
     if (userIndex === -1) {
         throw new Error('User not found');
     }
-
-    // This logic is now handled in the dialog by disabling the input
-    // if (data.username && data.username !== users[userIndex].username) {
-    //     const existingUser = users.find(u => u.username.toLowerCase() === data.username?.toLowerCase());
-    //     if (existingUser) {
-    //         throw new Error('Username is already taken.');
-    //     }
-    // }
 
     const updatedUser = {
         ...users[userIndex],
@@ -224,6 +216,7 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio' | 'user
                 return {
                     ...post,
                     authorName: updatedUser.name,
+                    author: updatedUser,
                 };
             }
             return post;

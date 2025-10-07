@@ -8,7 +8,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Info, Send } from "lucide-react";
-import type { Story, User } from "@/lib/types";
+import type { EnrichedStory, Story, User } from "@/lib/types";
 import { PostActions } from "./post-actions";
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -46,7 +46,7 @@ function CommentForm({ postId }: { postId: string }) {
     );
 }
 
-export function PostCard({ post: story }: { post: Story & { reason?: string } }) {
+export function PostCard({ post: story }: { post: EnrichedStory & { reason?: string } }) {
   const authorName = story.authorName || 'Unknown Author';
   const authorUsername = story.authorUsername || 'unknown';
   
