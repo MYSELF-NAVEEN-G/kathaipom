@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 
 export default async function UserManagementPage() {
     const { user: currentUser } = await auth();
-    const userRole = currentUser?.isAdmin ? 'admin' : 'user';
 
     // Protect this page to only be accessible by admins
     if (!currentUser || !currentUser.isAdmin) {
@@ -14,12 +13,6 @@ export default async function UserManagementPage() {
     }
     
     const users = await getUsers();
-    const allPosts = await getPosts();
-
-    const usersWithPostCount = users.map(user => {
-        const postCount = allPosts.filter(post => post.authorId === user.id).length;
-        return { ...user, postCount };
-    });
 
 
   return (
@@ -29,7 +22,7 @@ export default async function UserManagementPage() {
           <h2 className="text-3xl font-headline font-bold mb-6">
             User Management
           </h2>
-          <UserList users={usersWithPostCount} />
+          <UserList users={users} />
         </div>
       </AppLayout>
     </main>

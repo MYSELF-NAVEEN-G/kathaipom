@@ -27,7 +27,7 @@ import { Trash2 } from "lucide-react";
 import { deleteUserAndPosts } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 
-type UserWithPostCount = User & { postCount: number };
+type UserWithPostCount = User & { postCount?: number };
 
 export function UserList({ users }: { users: UserWithPostCount[] }) {
   const { toast } = useToast();
@@ -60,7 +60,6 @@ export function UserList({ users }: { users: UserWithPostCount[] }) {
             <TableHead>Name</TableHead>
             <TableHead>Username</TableHead>
             <TableHead>User ID</TableHead>
-            <TableHead>Posts</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -76,7 +75,6 @@ export function UserList({ users }: { users: UserWithPostCount[] }) {
               <TableCell className="font-medium">{user.name}</TableCell>
               <TableCell className="text-muted-foreground">@{user.username}</TableCell>
               <TableCell className="font-mono text-xs">{user.id}</TableCell>
-              <TableCell>{user.postCount}</TableCell>
               <TableCell className="text-right">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
