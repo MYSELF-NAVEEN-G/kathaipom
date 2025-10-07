@@ -53,12 +53,12 @@ export function PostActions({
           title: "Story Deleted",
           description: "The story has been successfully removed.",
         });
-        setIsDeleted(true);
-      } catch (error) {
+        setIsDeleted(true); // Optimistically update the UI
+      } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to delete the story.",
+          description: error.message || "Failed to delete the story.",
         });
       }
     });

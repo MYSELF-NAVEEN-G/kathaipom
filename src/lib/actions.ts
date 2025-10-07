@@ -98,9 +98,15 @@ export async function addComment(formData: FormData) {
 }
 
 export async function deleteStory(postId: string) {
-    const { user } = await auth();
-    if (!user || !user.isAdmin) {
-      throw new Error('Permission denied');
+    const { user: authUser } = await auth();
+    if (!authUser) {
+      throw new Error('You must be logged in to delete a story.');
+    }
+
+    // Re-fetch the user from the source of truth to ensure permissions are up-to-date
+    const currentUser = await getUserById(authUser.id);
+    if (!currentUser || !currentUser.isAdmin) {
+         throw new Error('Permission denied. You do not have admin privileges.');
     }
 
     const posts = await getPosts();
@@ -109,10 +115,10 @@ export async function deleteStory(postId: string) {
     if (!postToDelete) {
       throw new Error('Story not found');
     }
-
-    const updatedPosts = posts.filter(p => p.id !== postId);
     
+    const updatedPosts = posts.filter(p => p.id !== postId);
     await writePostsToFile(updatedPosts);
+
     revalidatePath('/feed');
     if (postToDelete.authorUsername) {
         revalidatePath(`/profile/${postToDelete.authorUsername}`);
@@ -193,6 +199,16 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio'> & { av
         throw new Error('User not found');
     }
 
+    // Check for username conflict if the username is being changed.
+    // Note: The UI for this is disabled, but this is a good server-side safeguard.
+    // if (data.username && data.username !== users[userIndex].username) {
+    //     const existingUser = users.find(u => u.username.toLowerCase() === data.username?.toLowerCase());
+    //     if (existingUser) {
+    //         throw new Error('Username is already taken.');
+    //     }
+    // }
+
+
     const updatedUser = {
         ...users[userIndex],
         ...data,
@@ -210,7 +226,7 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'bio'> & { av
                     ...post,
                     authorName: updatedUser.name,
                     author: {
-                        ...post.author,
+                        ...(post.author as User),
                         name: updatedUser.name,
                         avatar: updatedUser.avatar,
                     }
