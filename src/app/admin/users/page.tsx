@@ -1,18 +1,48 @@
+'use client';
+
 import { AppLayout } from "@/components/layout/app-layout";
 import { getUsers } from "@/lib/data";
 import { UserList } from "@/components/admin/user-list";
-import { auth } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
 import { redirect } from "next/navigation";
+import React from "react";
+import type { User } from "@/lib/types";
 
-export default async function UserManagementPage() {
-    const { user: currentUser } = await auth();
+export default function UserManagementPage() {
+    const { user: currentUser } = useAuth();
+    const [users, setUsers] = React.useState<User[]>([]);
 
-    // Protect this page to only be accessible by admins
-    if (!currentUser || !currentUser.isAdmin) {
-        redirect('/feed');
-    }
+    React.useEffect(() => {
+        // Protect this page to only be accessible by admins
+        if (currentUser && !currentUser.isAdmin) {
+            redirect('/feed');
+        }
+
+        async function fetchUsers() {
+            const userList = await getUsers();
+            setUsers(userList);
+        }
+        
+        if (currentUser?.isAdmin) {
+            fetchUsers();
+        }
+
+    }, [currentUser]);
     
-    const users = await getUsers();
+    if (!currentUser) {
+        return (
+             <main>
+                <AppLayout>
+                    <div className="p-4 md:p-6">
+                        <h2 className="text-3xl font-headline font-bold mb-6">
+                            User Management
+                        </h2>
+                        <p>Loading...</p>
+                    </div>
+                </AppLayout>
+            </main>
+        )
+    }
 
 
   return (
