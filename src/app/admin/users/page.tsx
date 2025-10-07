@@ -1,7 +1,6 @@
 'use client';
 
 import { AppLayout } from "@/components/layout/app-layout";
-import { getUsers } from "@/lib/data";
 import { UserList } from "@/components/admin/user-list";
 import { useAuth } from "@/hooks/use-auth";
 import { redirect } from "next/navigation";
@@ -19,8 +18,15 @@ export default function UserManagementPage() {
         }
 
         async function fetchUsers() {
-            const userList = await getUsers();
-            setUsers(userList);
+            try {
+                const res = await fetch('/api/get-users-from-file');
+                if (!res.ok) throw new Error("Failed to fetch users");
+                const userList = await res.json();
+                setUsers(userList);
+            } catch (error) {
+                console.error("Error fetching users:", error);
+                setUsers([]);
+            }
         }
         
         if (currentUser?.isAdmin) {
