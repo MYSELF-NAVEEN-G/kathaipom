@@ -45,23 +45,17 @@ export function PostActions({
   };
 
   const handleDelete = () => {
-    const isAdmin = userRole === 'super-admin' || userRole === 'writer';
-    if (!isAdmin) {
-      toast({
-        variant: "destructive",
-        title: "Permission Denied",
-        description: "You do not have permission to delete this story.",
-      });
-      return;
-    }
-    
     startTransition(async () => {
       try {
-        await deleteStory(postId);
-        toast({
-          title: "Story Deleted",
-          description: "The story has been successfully removed.",
-        });
+        const result = await deleteStory(postId);
+        if (result.success) {
+          toast({
+            title: "Story Deleted",
+            description: "The story has been successfully removed.",
+          });
+        } else {
+            throw new Error("Deletion failed on server.");
+        }
       } catch (error) {
         toast({
           variant: "destructive",
