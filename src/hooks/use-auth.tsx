@@ -5,6 +5,7 @@ import type { User } from '@/lib/types';
 
 async function fetchUserById(userId: string): Promise<User | null> {
     try {
+        // Fetch from the real API route now
         const res = await fetch('/api/users');
         if (!res.ok) {
             console.error('Failed to fetch users');
@@ -43,7 +44,9 @@ export function useAuth() {
         initializeAuth();
     };
 
+    // Listen for storage changes from other tabs
     window.addEventListener('storage', handleAuthChange);
+    // Listen for our custom login event
     window.addEventListener('login', handleAuthChange);
 
     return () => {
