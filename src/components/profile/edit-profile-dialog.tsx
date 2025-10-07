@@ -29,12 +29,10 @@ import type { User } from '@/lib/types';
 import { updateUser } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Upload } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 
 const profileFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  username: z.string().min(3, { message: 'Username must be at least 3 characters.' }),
   bio: z.string().max(160, { message: 'Bio cannot be more than 160 characters.' }).optional(),
 });
 
@@ -60,7 +58,6 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       name: user.name,
-      username: user.username,
       bio: user.bio,
     },
   });
@@ -79,7 +76,10 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
   const onSubmit = (data: ProfileFormValues) => {
     startTransition(async () => {
       try {
-        const updateData: Parameters<typeof updateUser>[0] = { ...data };
+        const updateData: Parameters<typeof updateUser>[0] = { 
+            name: data.name,
+            bio: data.bio
+        };
         if (avatarPreview) {
             updateData.avatar = { ...user.avatar, imageUrl: avatarPreview };
         }
@@ -109,7 +109,7 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
   const onDialogOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
         // Reset form and previews when dialog is closed
-        form.reset({ name: user.name, username: user.username, bio: user.bio });
+        form.reset({ name: user.name, bio: user.bio });
         setAvatarPreview(null);
         setCoverPreview(null);
     }
@@ -166,19 +166,13 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your username" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                <Input placeholder="Your username" value={user.username} disabled />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
             <FormField
               control={form.control}
               name="bio"

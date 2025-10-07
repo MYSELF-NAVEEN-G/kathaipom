@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Story, Comment, User, ImagePlaceholder } from './types';
+import type { Story, Comment, User, ImagePlaceholder, EnrichedStory } from './types';
 import { getPosts, writePostsToFile, getUsers, writeUsersToFile, getUserById } from './data';
 import { auth } from './auth';
 
@@ -13,9 +13,14 @@ export async function addStory(storyData: {
   images?: string[];
 }) {
   const stories = await getPosts();
+  const author = await getUserById(storyData.authorId);
+  if (!author) {
+    throw new Error('Author not found');
+  }
 
-  const newStory: Story = {
+  const newStory: EnrichedStory = {
     id: `post-${Date.now()}`,
+    author,
     authorId: storyData.authorId,
     authorName: storyData.authorName,
     authorUsername: storyData.authorUsername,
@@ -108,7 +113,7 @@ export async function deleteStory(postId: string) {
     const updatedPosts = posts.filter(p => p.id !== postId);
     
     await writePostsToFile(updatedPosts);
-    revalidatePath('/feed');
+revalidatePath('/feed');
     if (postToDelete.authorUsername) {
         revalidatePath(`/profile/${postToDelete.authorUsername}`);
     }
@@ -124,18 +129,18 @@ export async function followUser(followingId: string) {
     const userToFollowIndex = users.findIndex(u => u.id === followingId);
 
     if (followerIndex !== -1 && userToFollowIndex !== -1) {
-        const follower = users[followerIndex];
+        const followerUser = users[followerIndex];
         const userToFollow = users[userToFollowIndex];
 
-        if (!follower.following.includes(followingId)) {
-            follower.following.push(followingId);
+        if (!followerUser.following.includes(followingId)) {
+            followerUser.following.push(followingId);
         }
-        if (!userToFollow.followers.includes(follower.id)) {
-            userToFollow.followers.push(follower.id);
+        if (!userToFollow.followers.includes(followerUser.id)) {
+            userToFollow.followers.push(followerUser.id);
         }
         await writeUsersToFile(users);
         revalidatePath(`/profile/${userToFollow.username}`);
-        revalidatePath(`/profile/${follower.username}`);
+        revalidatePath(`/profile/${followerUser.username}`);
     }
 }
 
@@ -175,7 +180,7 @@ export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     return newUser;
 }
 
-export async function updateUser(data: Partial<Pick<User, 'name' | 'username' | 'bio'> & { avatar?: ImagePlaceholder, coverImage?: ImagePlaceholder }>) {
+export async function updateUser(data: Partial<Pick<User, 'name' | 'bio'> & { avatar?: ImagePlaceholder, coverImage?: ImagePlaceholder }>) {
     const { user } = await auth();
     if (!user) {
         throw new Error('Permission denied');
@@ -188,28 +193,34 @@ export async function updateUser(data: Partial<Pick<User, 'name' | 'username' | 
         throw new Error('User not found');
     }
 
-    const originalUsername = users[userIndex].username;
-    
-    // Check for username conflict
-    if (data.username && data.username.toLowerCase() !== originalUsername.toLowerCase()) {
-        const existingUser = users.find(u => u.username.toLowerCase() === data.username!.toLowerCase());
-        if (existingUser) {
-            throw new Error('Username is already taken.');
-        }
-    }
-
-    users[userIndex] = {
+    const updatedUser = {
         ...users[userIndex],
         ...data,
     };
+    users[userIndex] = updatedUser;
 
     await writeUsersToFile(users);
 
-    // Revalidate the old path if username changed
-    if (data.username && data.username !== originalUsername) {
-        revalidatePath(`/profile/${originalUsername}`);
+    // If name or avatar changed, update all posts by this user
+    if (data.name || data.avatar) {
+        const posts = await getPosts();
+        const updatedPosts = posts.map(post => {
+            if (post.authorId === user.id) {
+                return {
+                    ...post,
+                    authorName: updatedUser.name,
+                    author: {
+                        ...post.author,
+                        name: updatedUser.name,
+                        avatar: updatedUser.avatar,
+                    }
+                };
+            }
+            return post;
+        });
+        await writePostsToFile(updatedPosts);
     }
-    // Revalidate the new/current path
-    revalidatePath(`/profile/${users[userIndex].username}`);
-    revalidatePath('/feed'); // In case author names changed on posts
+
+    revalidatePath(`/profile/${user.username}`);
+    revalidatePath('/feed'); 
 }

@@ -33,7 +33,7 @@ export type Story = {
   timestamp: string;
 };
 
-export type EnrichedStory = Omit<Story, 'authorId'> & {
+export type EnrichedStory = Story & {
   author: User;
   priorityScore?: number;
   reason?: string;
