@@ -10,6 +10,7 @@ async function readUsersFromFile(): Promise<User[]> {
   try {
     await fs.access(usersFilePath);
     const data = await fs.readFile(usersFilePath, 'utf-8');
+    if (data.trim() === '') return mockUsers; // If file is empty, use mock
     return JSON.parse(data);
   } catch (error) {
     // If the file doesn't exist, create it with mock data

@@ -185,6 +185,7 @@ export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     };
     const updatedUsers = [...users, newUser];
     await writeUsersToFile(updatedUsers);
+    revalidatePath('/admin/users'); // Revalidate user list for admins
     return newUser;
 }
 
@@ -240,16 +241,16 @@ export async function deleteUserAndPosts(userId: string) {
     }
 
     // Remove user
-    const users = await getUsers();
+    let users = await getUsers();
     const userToDelete = users.find(u => u.id === userId);
 
     if (!userToDelete) {
          throw new Error("User not found.");
     }
 
-    const updatedUsers = users.filter(u => u.id !== userId);
+    users = users.filter(u => u.id !== userId);
     
-    await writeUsersToFile(updatedUsers);
+    await writeUsersToFile(users);
 
     // Remove user's posts
     const posts = await getPosts();
