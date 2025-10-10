@@ -189,6 +189,7 @@ export async function addUser(user: Omit<User, 'id'>): Promise<User> {
     return newUser;
 }
 
+
 export async function updateUser(data: Partial<Pick<User, 'name' | 'bio' | 'avatar' | 'coverImage'>>) {
     const { user } = await auth();
     if (!user) {
