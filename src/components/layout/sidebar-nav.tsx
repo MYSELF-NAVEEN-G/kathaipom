@@ -71,29 +71,20 @@ export function SidebarNav() {
     },
   ];
 
-  const writerMenuItems = [
+  const adminMenuItems = [
     { href: '/feed', label: 'Feed Preview', icon: Home },
     { href: '/admin/dashboard', label: 'Writer Dashboard', icon: LayoutDashboard },
-    {
+    { href: '/admin/import', label: 'Import', icon: Github },
+    { href: '/admin/users', label: 'User Management', icon: Users },
+     {
       href: currentUser ? `/profile/${currentUser.username}` : '#',
       label: 'Profile',
       icon: UserIcon,
     },
   ];
 
-  // Assuming a super-admin might have a different role name or property
-  // For now, we'll combine writer and potential super-admin tools.
-  const adminMenuItems = [
-    ...writerMenuItems,
-    { href: '/admin/import', label: 'Import', icon: Github },
-    { href: '/admin/users', label: 'User Management', icon: Users },
-  ];
-
   const getMenuItems = () => {
-    // In Supabase, we'd check a role in metadata.
-    // For this example, we'll stick to the 'isAdmin' flag.
     if (currentUser.isAdmin) {
-        // A "super-admin" could be another flag, but we'll combine for now
         return adminMenuItems;
     }
     return userMenuItems;

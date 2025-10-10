@@ -40,17 +40,25 @@ export default function AdminLoginPage() {
         description: error.message,
       });
     } else if (user) {
-      if (user.user_metadata.is_admin) {
-        window.dispatchEvent(new Event('login'));
-        router.push('/feed');
-        router.refresh();
-      } else {
+      // In a real app, you would fetch a custom claim or profile to check for admin role.
+      // Supabase user metadata is a good place for this.
+      // For this prototype, we assume the initial 'is_admin' metadata flag works.
+      const { data, error: profileError } = await supabase
+        .from('users')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+        
+      if (profileError || !data || !data.is_admin) {
         await supabase.auth.signOut();
         toast({
           variant: 'destructive',
           title: 'Permission Denied',
-          description: 'This account does not have writer privileges.',
+          description: profileError?.message || 'This account does not have writer privileges.',
         });
+      } else {
+        router.push('/feed');
+        router.refresh();
       }
     }
   };

@@ -37,11 +37,8 @@ export default function LoginPage() {
         description: error.message,
       });
     } else {
-      // Upon successful login, Supabase client sets a cookie.
-      // The auth hook will pick up the new session.
-      window.dispatchEvent(new Event('login'));
       router.push('/feed');
-      router.refresh(); // Force a refresh to re-evaluate server-side auth
+      router.refresh(); 
     }
   };
 
