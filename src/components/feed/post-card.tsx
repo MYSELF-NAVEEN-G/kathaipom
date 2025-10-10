@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -71,14 +72,16 @@ export function PostCard({ post: story }: { post: EnrichedStory & { reason?: str
   return (
     <Card className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 duration-300 ease-in-out flex flex-col">
       <CardHeader className="flex flex-row items-center gap-3 p-4">
-        <Avatar>
-          <AvatarImage src={author?.avatar.imageUrl} alt={authorName} />
-          <AvatarFallback>{authorName?.charAt(0) || "-"}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <p className="font-semibold text-sm">{authorName}</p>
-          <p className="text-xs text-muted-foreground">@{authorUsername}</p>
-        </div>
+        <Link href={`/profile/${authorUsername}`} className="flex-1 flex items-center gap-3">
+          <Avatar>
+            <AvatarImage src={author?.avatar.imageUrl} alt={authorName} />
+            <AvatarFallback>{authorName?.charAt(0) || "-"}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-semibold text-sm">{authorName}</p>
+            <p className="text-xs text-muted-foreground">@{authorUsername}</p>
+          </div>
+        </Link>
         <div className="flex items-center gap-1">
             {story.reason && (
                 <TooltipProvider>

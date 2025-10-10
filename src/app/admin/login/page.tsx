@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
                 localStorage.setItem('userName', adminUser.name);
                 localStorage.setItem('userUsername', adminUser.username);
                 window.dispatchEvent(new Event('login'));
-                router.push('/admin/dashboard');
+                router.push('/feed');
                 return;
             }
         }
@@ -52,7 +52,7 @@ export default function AdminLoginPage() {
             localStorage.setItem('userName', user.name);
             localStorage.setItem('userUsername', user.username);
             window.dispatchEvent(new Event('login'));
-            router.push('/admin/dashboard');
+            router.push('/feed');
         } else {
             toast({
                 variant: "destructive",

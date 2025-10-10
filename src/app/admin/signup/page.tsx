@@ -53,7 +53,7 @@ export default function WriterSignupPage() {
             localStorage.setItem('userName', newUser.name);
             localStorage.setItem('userUsername', newUser.username);
             window.dispatchEvent(new Event('login'));
-            router.push('/admin/dashboard');
+            router.push('/feed');
         } catch(error: any) {
             toast({
                 variant: 'destructive',
