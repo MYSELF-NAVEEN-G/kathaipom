@@ -1,59 +1,75 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import type { User } from '@/lib/types';
+import type { User as AppUser } from '@/lib/types';
+import { createClient } from '@/lib/supabase/client';
+import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 
-async function fetchUserById(userId: string): Promise<User | null> {
-    try {
-        // Fetch from the real API route now
-        const res = await fetch('/api/users');
-        if (!res.ok) {
-            console.error('Failed to fetch users');
-            return null;
-        }
-        const users: User[] = await res.json();
-        const currentUser = users.find((u: User) => u.id === userId);
-        return currentUser || null;
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        return null;
-    }
+async function fetchAppUser(user: User): Promise<AppUser | null> {
+  if (!user) return null;
+  // Here you could fetch more profile details from a 'users' table if needed
+  // For now, we'll construct it from the auth user metadata
+  return {
+    id: user.id,
+    name: user.user_metadata.name,
+    username: user.user_metadata.username,
+    avatar: {
+      id: 'avatar-1',
+      imageUrl: user.user_metadata.avatar_url || `https://picsum.photos/seed/${user.id}/200`,
+      description: 'user avatar',
+      imageHint: 'person portrait'
+    },
+    bio: user.user_metadata.bio,
+    coverImage: {
+       id: 'cover-1',
+       imageUrl: user.user_metadata.cover_image_url || `https://picsum.photos/seed/cover-${user.id}/800/200`,
+       description: 'cover image',
+       imageHint: 'abstract background'
+    },
+    followers: [],
+    following: [],
+    isAdmin: user.user_metadata.is_admin || false,
+  };
 }
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const initializeAuth = useCallback(async () => {
-    setIsLoading(true);
-    const userId = localStorage.getItem('userId');
-    
-    if (userId) {
-        const currentUser = await fetchUserById(userId);
-        setUser(currentUser);
-    } else {
-      setUser(null);
-    }
-    setIsLoading(false);
-  }, []);
+  const supabase = createClient();
 
   useEffect(() => {
-    initializeAuth();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      async (event: AuthChangeEvent, session: Session | null) => {
+        setIsLoading(true);
+        const authUser = session?.user ?? null;
+        if (authUser) {
+          const appUser = await fetchAppUser(authUser);
+          setUser(appUser);
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      }
+    );
 
-    const handleAuthChange = () => {
-        initializeAuth();
-    };
+    // Initial check
+    const checkUser = async () => {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+            const appUser = await fetchAppUser(authUser);
+            setUser(appUser);
+        }
+        setIsLoading(false);
+    }
+    checkUser();
 
-    // Listen for storage changes from other tabs
-    window.addEventListener('storage', handleAuthChange);
-    // Listen for our custom login event
-    window.addEventListener('login', handleAuthChange);
 
     return () => {
-        window.removeEventListener('storage', handleAuthChange);
-        window.removeEventListener('login', handleAuthChange);
+      subscription.unsubscribe();
     };
-  }, [initializeAuth]);
+  }, [supabase.auth]);
 
   return { user, isLoading };
 }

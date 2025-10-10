@@ -1,12 +1,7 @@
+// This file is no longer needed with Supabase and can be removed.
+// For now, returning an empty array to prevent errors if it's still being called.
 import { NextResponse } from 'next/server';
-import { getUsers } from '@/lib/data';
 
 export async function GET() {
-  try {
-    const users = await getUsers();
-    return NextResponse.json(users);
-  } catch (error) {
-    console.error('Failed to read user data in /api/users:', error);
-    return NextResponse.json({ error: 'Failed to read user data' }, { status: 500 });
-  }
+  return NextResponse.json([]);
 }

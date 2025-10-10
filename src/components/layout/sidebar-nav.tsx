@@ -28,96 +28,79 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import type { User } from '@/lib/types';
-
-
-type UserRole = 'user' | 'writer' | 'super-admin' | null;
-
-type UserData = {
-  id: string;
-  name: string;
-  username: string;
-  avatarUrl: string;
-  role: UserRole;
-};
+import { createClient } from '@/lib/supabase/client';
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { user: authUser } = useAuth();
-  const [currentUser, setCurrentUser] = React.useState<UserData | null>(null);
+  const { user: currentUser } = useAuth();
+  const router = useRouter();
 
-  React.useEffect(() => {
-    const userRole = localStorage.getItem('userRole') as UserRole;
-    if (authUser) {
-      setCurrentUser({
-        id: authUser.id,
-        name: authUser.name,
-        username: authUser.username,
-        avatarUrl: authUser.avatar.imageUrl,
-        role: userRole,
-      });
-    } else {
-        setCurrentUser(null);
-    }
-  }, [authUser]);
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  };
+
+  if (!currentUser) {
+    return (
+      <>
+        <SidebarHeader className="p-4 flex items-center gap-2">
+          <Logo size="small" />
+          <SidebarInput placeholder="Search..." className="mt-0" />
+        </SidebarHeader>
+        <SidebarContent className="p-4 pt-0" />
+        <SidebarSeparator />
+        <SidebarFooter className="p-4">
+          <Button asChild className="w-full">
+            <Link href="/login">Sign In</Link>
+          </Button>
+        </SidebarFooter>
+      </>
+    );
+  }
 
   const userMenuItems = [
     { href: '/feed', label: 'Feed', icon: Home },
     { href: '#', label: 'Search', icon: Search },
     { href: '#', label: 'Notifications', icon: Bell },
-    { href: currentUser ? `/profile/${currentUser.username}` : '#', label: 'Profile', icon: UserIcon },
+    {
+      href: currentUser ? `/profile/${currentUser.username}` : '#',
+      label: 'Profile',
+      icon: UserIcon,
+    },
   ];
 
   const writerMenuItems = [
     { href: '/feed', label: 'Feed Preview', icon: Home },
     { href: '/admin/dashboard', label: 'Writer Dashboard', icon: LayoutDashboard },
-    { href: currentUser ? `/profile/${currentUser.username}` : '#', label: 'Profile', icon: UserIcon },
+    {
+      href: currentUser ? `/profile/${currentUser.username}` : '#',
+      label: 'Profile',
+      icon: UserIcon,
+    },
   ];
 
+  // Assuming a super-admin might have a different role name or property
+  // For now, we'll combine writer and potential super-admin tools.
   const adminMenuItems = [
     ...writerMenuItems,
     { href: '/admin/import', label: 'Import', icon: Github },
     { href: '/admin/users', label: 'User Management', icon: Users },
   ];
-  
-  const handleLogout = () => {
-    localStorage.clear();
-    document.cookie = 'userId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    window.dispatchEvent(new Event('login'));
-    window.location.href = '/';
-  }
-
-  if (!currentUser) {
-    return (
-        <>
-            <SidebarHeader className="p-4 flex items-center gap-2">
-                <Logo size="small" />
-                <SidebarInput placeholder="Search..." className="mt-0" />
-            </SidebarHeader>
-            <SidebarContent className="p-4 pt-0" />
-            <SidebarSeparator />
-            <SidebarFooter className="p-4">
-                 <Button asChild className="w-full">
-                    <Link href="/login">Sign In</Link>
-                 </Button>
-            </SidebarFooter>
-        </>
-    );
-  }
 
   const getMenuItems = () => {
-    switch (currentUser.role) {
-      case 'super-admin':
+    // In Supabase, we'd check a role in metadata.
+    // For this example, we'll stick to the 'isAdmin' flag.
+    if (currentUser.isAdmin) {
+        // A "super-admin" could be another flag, but we'll combine for now
         return adminMenuItems;
-      case 'writer':
-        return writerMenuItems;
-      case 'user':
-      default:
-        return userMenuItems;
     }
+    return userMenuItems;
   };
 
   const menuItems = getMenuItems();
-  const canCreate = currentUser.role === 'writer' || currentUser.role === 'super-admin';
+  const canCreate = currentUser.isAdmin;
 
   return (
     <>
@@ -127,12 +110,12 @@ export function SidebarNav() {
       </SidebarHeader>
       <SidebarContent className="p-4 pt-0">
         {canCreate && (
-           <Button asChild className="w-full mb-4" size="lg">
-             <Link href="/admin/dashboard">
-               <PlusSquare className="mr-2 h-5 w-5" />
-               Write Story
-             </Link>
-           </Button>
+          <Button asChild className="w-full mb-4" size="lg">
+            <Link href="/admin/dashboard">
+              <PlusSquare className="mr-2 h-5 w-5" />
+              Write Story
+            </Link>
+          </Button>
         )}
         <SidebarMenu>
           {menuItems.map((item) => (
@@ -155,7 +138,7 @@ export function SidebarNav() {
       <SidebarFooter className="p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+            <AvatarImage src={currentUser.avatar.imageUrl} alt={currentUser.name} />
             <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
@@ -165,8 +148,13 @@ export function SidebarNav() {
             </p>
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="h-8 w-8">
-                <LogOut />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className="h-8 w-8"
+            >
+              <LogOut />
             </Button>
           </div>
         </div>

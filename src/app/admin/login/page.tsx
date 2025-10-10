@@ -15,58 +15,43 @@ import { Logo } from '@/components/logo';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import type { User } from '@/lib/types';
+import { createClient } from '@/lib/supabase/client';
 
 export default function AdminLoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createClient();
 
   const handleSignIn = async () => {
-     try {
-        const res = await fetch('/api/users');
-        if (!res.ok) throw new Error("Failed to fetch users");
-        const users: User[] = await res.json();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-        // Super Admin check
-        if (username.toLowerCase() === 'nafadmin' && password === 'nafstud') {
-            const adminUser = users.find(u => u.username === 'nafadmin');
-            if (adminUser) {
-                document.cookie = `userId=${adminUser.id}; path=/; max-age=604800`;
-                localStorage.setItem('userId', adminUser.id);
-                localStorage.setItem('userRole', 'super-admin');
-                localStorage.setItem('userName', adminUser.name);
-                localStorage.setItem('userUsername', adminUser.username);
-                window.dispatchEvent(new Event('login'));
-                router.push('/feed');
-                return;
-            }
-        }
-
-        const user = users.find(u => u.username === username);
-        if (user && user.isAdmin) {
-            document.cookie = `userId=${user.id}; path=/; max-age=604800`;
-            localStorage.setItem('userId', user.id);
-            localStorage.setItem('userRole', 'writer');
-            localStorage.setItem('userName', user.name);
-            localStorage.setItem('userUsername', user.username);
-            window.dispatchEvent(new Event('login'));
-            router.push('/feed');
-        } else {
-            toast({
-                variant: "destructive",
-                title: "Login Failed",
-                description: "Invalid username or password for a writer account.",
-            });
-        }
-    } catch (error) {
-        console.error(error);
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message,
+      });
+    } else if (user) {
+      if (user.user_metadata.is_admin) {
+        window.dispatchEvent(new Event('login'));
+        router.push('/feed');
+        router.refresh();
+      } else {
+        await supabase.auth.signOut();
         toast({
-            variant: "destructive",
-            title: "Login Error",
-            description: "Could not retrieve user data. Please try again.",
-        })
+          variant: 'destructive',
+          title: 'Permission Denied',
+          description: 'This account does not have writer privileges.',
+        });
+      }
     }
   };
 
@@ -87,14 +72,14 @@ export default function AdminLoginPage() {
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="writer-username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="writer-username"
-                type="text"
-                placeholder="Enter your username"
+                id="email"
+                type="email"
+                placeholder="writer@example.com"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -112,7 +97,7 @@ export default function AdminLoginPage() {
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">
-            Don't have an account?{" "}
+            Don't have an account?{' '}
             <Link href="/admin/signup" className="underline">
               Create account
             </Link>

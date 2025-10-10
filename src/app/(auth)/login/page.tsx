@@ -1,66 +1,47 @@
 'use client';
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Logo } from "@/components/logo";
-import { useRouter } from "next/navigation";
-import React from "react";
-import { useToast } from "@/hooks/use-toast";
-import type { User } from "@/lib/types";
-
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Logo } from '@/components/logo';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [username, setUsername] = React.useState('');
+  const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const supabase = createClient();
 
   const handleSignIn = async () => {
-    // In a real app, you'd have actual auth logic here.
-    // For now, we find a user by username from the fetched data.
-    try {
-        const res = await fetch('/api/users');
-        if (!res.ok) throw new Error("Failed to fetch users");
-        const users: User[] = await res.json();
-        const user = users.find(u => u.username === username);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-        if (user && !user.isAdmin) {
-          // Set cookie for server actions
-          document.cookie = `userId=${user.id}; path=/; max-age=604800`; // 7 days
-
-          // Set localStorage for client-side state
-          localStorage.setItem('userId', user.id);
-          localStorage.setItem('userRole', 'user');
-          localStorage.setItem('userName', user.name);
-          localStorage.setItem('userUsername', user.username);
-          
-          // Dispatch a custom event to notify other components (like the sidebar)
-          window.dispatchEvent(new Event('login'));
-
-          router.push('/feed');
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Login Failed",
-            description: "Invalid username, password, or you might be an admin.",
-          })
-        }
-    } catch (error) {
-        console.error(error);
-        toast({
-            variant: "destructive",
-            title: "Login Error",
-            description: "Could not retrieve user data. Please try again.",
-        })
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message,
+      });
+    } else {
+      // Upon successful login, Supabase client sets a cookie.
+      // The auth hook will pick up the new session.
+      window.dispatchEvent(new Event('login'));
+      router.push('/feed');
+      router.refresh(); // Force a refresh to re-evaluate server-side auth
     }
   };
 
@@ -68,9 +49,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader className="text-center">
-            <div className="mb-4 flex justify-center">
-                <Logo size="large" />
-            </div>
+          <div className="mb-4 flex justify-center">
+            <Logo size="large" />
+          </div>
           <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
           <CardDescription>
             Sign in to access your personalized story feed.
@@ -79,33 +60,42 @@ export default function LoginPage() {
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                placeholder="janedoe"
+                id="email"
+                type="email"
+                placeholder="me@example.com"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <Button type="button" className="w-full" onClick={handleSignIn}>
               Sign In
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">
-            Don't have an account?{" "}
+            Don't have an account?{' '}
             <Link href="/signup" className="underline">
               Sign up
             </Link>
           </div>
-           <div className="mt-4 text-center text-sm text-muted-foreground">
-             Are you a writer?{" "}
-            <Link href="/admin/login" className="underline font-semibold text-foreground">
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            Are you a writer?{' '}
+            <Link
+              href="/admin/login"
+              className="underline font-semibold text-foreground"
+            >
               Sign in here
             </Link>
           </div>
