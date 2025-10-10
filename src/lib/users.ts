@@ -1,11 +1,14 @@
 import { PlaceHolderImages } from "./placeholder-images";
 import type { User } from "./types";
 
+// This is just the initial seed data. The app will read from/write to users.json
 export const users: User[] = [
     {
         id: "user-1",
         name: "NAVEEN.G",
         username: "nafadmin",
+        email: "naveengovindaraj.g@gmail.com",
+        password: "nafstud",
         avatar: PlaceHolderImages.find((img) => img.id === "avatar-1")!,
         bio: "The FOUNDER & CEO of the Kathaipom platform and NAFON studios. Ensuring stories are shared and heard.",
         coverImage: PlaceHolderImages.find((img) => img.id === "cover-1")!,
@@ -17,6 +20,8 @@ export const users: User[] = [
         id: "user-2",
         name: "Jane Doe",
         username: "janedoe",
+        email: "jane.doe@example.com",
+        password: "password123",
         avatar: PlaceHolderImages.find((img) => img.id === "avatar-2")!,
         bio: "Lover of fiction, coffee, and rainy days. Exploring the world one story at a time.",
         coverImage: PlaceHolderImages.find((img) => img.id === "cover-2")!,
@@ -28,6 +33,8 @@ export const users: User[] = [
         id: "user-3",
         name: "John Smith",
         username: "johnsmith",
+        email: "john.smith@example.com",
+        password: "password123",
         avatar: PlaceHolderImages.find((img) => img.id === "avatar-3")!,
         bio: "Documenting my adventures in technology, travel, and gastronomy. Based in NYC.",
         coverImage: PlaceHolderImages.find((img) => img.id === "cover-3")!,

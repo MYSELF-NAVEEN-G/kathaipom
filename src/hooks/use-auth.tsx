@@ -13,6 +13,19 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// A new function to fetch user from API route
+async function fetchUserFromApi(userId: string): Promise<User | null> {
+    try {
+        const res = await fetch('/api/users');
+        if (!res.ok) return null;
+        const users: User[] = await res.json();
+        return users.find(u => u.id === userId) || null;
+    } catch {
+        return null;
+    }
+}
+
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,8 +33,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUser = useCallback(async (userId: string) => {
     setIsLoading(true);
     try {
-      const fetchedUser = await getUserById(userId);
-      setUser(fetchedUser);
+      // On the server, we can still use getUserById, but on the client, we need an API.
+      // For simplicity and consistency, let's just use a client-side fetch.
+      const res = await fetch('/api/users');
+      if (!res.ok) throw new Error("Failed to fetch users");
+      const users: User[] = await res.json();
+      const foundUser = users.find(u => u.id === userId) || null;
+      setUser(foundUser);
     } catch (error) {
       console.error("Failed to fetch user", error);
       setUser(null);

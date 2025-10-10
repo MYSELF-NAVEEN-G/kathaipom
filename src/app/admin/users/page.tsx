@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { redirect } from "next/navigation";
 import React from "react";
 import type { User } from "@/lib/types";
-import { getUsers } from "@/lib/data";
 
 export default function UserManagementPage() {
     const { user: currentUser } = useAuth();
@@ -19,14 +18,6 @@ export default function UserManagementPage() {
 
         async function fetchUsers() {
             try {
-                // This is a server function, but we can call it from a client component
-                // if we were to wrap it in a client-callable server action.
-                // For simplicity here, we'll pretend we can get it.
-                // In a real app, this would be an API call or server action.
-                // const userList = await getUsers();
-                // setUsers(userList);
-                
-                // Temp fetch until API exists
                  const res = await fetch('/api/users');
                  const data = await res.json();
                  setUsers(data);
