@@ -26,7 +26,7 @@ export default function SignupPage() {
   const [password, setPassword] = React.useState('');
   const supabase = createClient();
 
-  const handleSignUp = async () => Await
+  const handleSignUp = async () => {
     if (!name || !username || !email || !password) {
       toast({
         variant: 'destructive',
