@@ -8,12 +8,11 @@ const postsFilePath = path.join(process.cwd(), 'src', 'lib', 'posts.json');
 
 async function readUsersFromFile(): Promise<User[]> {
   try {
-    // try to read, if it fails, it means it doesn't exist.
+    await fs.access(usersFilePath);
     const data = await fs.readFile(usersFilePath, 'utf-8');
-    // If file is empty or just whitespace, use mock data and write it.
+    // If file is empty, return an empty array, but don't overwrite with mocks.
     if (data.trim() === '') {
-        await writeUsersToFile(mockUsers);
-        return mockUsers;
+        return [];
     }
     return JSON.parse(data);
   } catch (error: any) {
@@ -60,7 +59,13 @@ export async function writePostsToFile(posts: Story[]): Promise<void> {
 // -- Data Access Functions --
 
 export async function getUsers(): Promise<User[]> {
-  return await readUsersFromFile();
+  // If users.json doesn't exist or is empty, initialize with mock users.
+  let users = await readUsersFromFile();
+  if (users.length === 0) {
+      users = mockUsers;
+      await writeUsersToFile(users);
+  }
+  return users;
 }
 
 export async function getUserByUsername(username: string): Promise<User | undefined> {
