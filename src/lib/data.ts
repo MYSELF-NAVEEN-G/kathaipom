@@ -8,14 +8,23 @@ const postsFilePath = path.join(process.cwd(), 'src', 'lib', 'posts.json');
 
 async function readUsersFromFile(): Promise<User[]> {
   try {
-    await fs.access(usersFilePath);
+    // try to read, if it fails, it means it doesn't exist.
     const data = await fs.readFile(usersFilePath, 'utf-8');
-    if (data.trim() === '') return mockUsers; // If file is empty, use mock
+    // If file is empty or just whitespace, use mock data and write it.
+    if (data.trim() === '') {
+        await writeUsersToFile(mockUsers);
+        return mockUsers;
+    }
     return JSON.parse(data);
-  } catch (error) {
-    // If the file doesn't exist, create it with mock data
-    await writeUsersToFile(mockUsers);
-    return mockUsers;
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+        // If the file doesn't exist, create it with mock data
+        await writeUsersToFile(mockUsers);
+        return mockUsers;
+    }
+    // For other errors, log it and return empty
+    console.error("Error reading from users.json:", error);
+    return [];
   }
 }
 

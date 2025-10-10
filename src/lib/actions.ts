@@ -250,7 +250,13 @@ export async function deleteUserAndPosts(userId: string) {
 
     users = users.filter(u => u.id !== userId);
     
-    await writeUsersToFile(users);
+    // Also remove the deleted user from other users' following lists
+    const updatedUsers = users.map(user => {
+        user.following = user.following.filter(id => id !== userId);
+        return user;
+    });
+
+    await writeUsersToFile(updatedUsers);
 
     // Remove user's posts
     const posts = await getPosts();

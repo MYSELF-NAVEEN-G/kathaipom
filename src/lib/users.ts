@@ -4,10 +4,10 @@ import type { User } from "./types";
 export const users: User[] = [
     {
         id: "user-1",
-        name: "Admin User",
+        name: "NAVEEN.G",
         username: "nafadmin",
         avatar: PlaceHolderImages.find((img) => img.id === "avatar-1")!,
-        bio: "The chief architect of the Kathaipom platform. Ensuring stories are shared and heard.",
+        bio: "The FOUNDER & CEO of the Kathaipom platform and NAFON studios. Ensuring stories are shared and heard.",
         coverImage: PlaceHolderImages.find((img) => img.id === "cover-1")!,
         followers: [],
         following: [],
