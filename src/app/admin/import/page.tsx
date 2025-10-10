@@ -10,22 +10,20 @@ import { useToast } from '@/hooks/use-toast';
 import { importFromGithub } from '@/ai/flows/import-from-github-flow';
 import { useRouter } from 'next/navigation';
 import { Github } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ImportPage() {
   const [repoUrl, setRepoUrl] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const adminUsername = localStorage.getItem('userUsername');
-    const adminName = localStorage.getItem('userName');
-    const adminId = localStorage.getItem('userUsername') === 'nafadmin' ? 'user-1' : 'user-1';
-
-    if (!adminUsername || !adminName) {
+    if (!currentUser) {
         toast({
             variant: 'destructive',
             title: 'Error',
@@ -40,9 +38,9 @@ export default function ImportPage() {
       const result = await importFromGithub({
         repoUrl,
         author: {
-          id: adminId,
-          name: adminName,
-          username: adminUsername,
+          id: currentUser.id,
+          name: currentUser.name,
+          username: currentUser.username,
         }
       });
       toast({
@@ -89,7 +87,7 @@ export default function ImportPage() {
                       required
                     />
                   </div>
-                  <Button type="submit" disabled={isLoading}>
+                  <Button type="submit" disabled={isLoading || !currentUser}>
                     {isLoading ? 'Importing...' : <> <Github className="mr-2"/> Import Stories</>}
                   </Button>
                 </div>

@@ -6,12 +6,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { redirect } from "next/navigation";
 import React from "react";
 import type { User } from "@/lib/types";
-import { createClient } from "@/lib/supabase/client";
+import { getUsers } from "@/lib/data";
 
 export default function UserManagementPage() {
     const { user: currentUser } = useAuth();
     const [users, setUsers] = React.useState<User[]>([]);
-    const supabase = createClient();
 
     React.useEffect(() => {
         if (currentUser && !currentUser.isAdmin) {
@@ -20,21 +19,18 @@ export default function UserManagementPage() {
 
         async function fetchUsers() {
             try {
-                const { data, error } = await supabase.from('users').select('*');
-                if (error) throw error;
-                // We need to map the Supabase user to our App user type.
-                const userList: User[] = data.map((u: any) => ({
-                    id: u.id,
-                    name: u.name,
-                    username: u.username,
-                    avatar: { imageUrl: u.avatar_url, id: 'avatar-1', description: '', imageHint: '' },
-                    bio: u.bio,
-                    coverImage: { imageUrl: u.cover_image_url, id: 'cover-1', description: '', imageHint: '' },
-                    followers: [], // In a real app, this would be another query
-                    following: [],
-                    isAdmin: u.is_admin
-                }));
-                setUsers(userList);
+                // This is a server function, but we can call it from a client component
+                // if we were to wrap it in a client-callable server action.
+                // For simplicity here, we'll pretend we can get it.
+                // In a real app, this would be an API call or server action.
+                // const userList = await getUsers();
+                // setUsers(userList);
+                
+                // Temp fetch until API exists
+                 const res = await fetch('/api/users');
+                 const data = await res.json();
+                 setUsers(data);
+
             } catch (error) {
                 console.error("Error fetching users:", error);
                 setUsers([]);
@@ -45,7 +41,7 @@ export default function UserManagementPage() {
             fetchUsers();
         }
 
-    }, [currentUser, supabase]);
+    }, [currentUser]);
     
     if (!currentUser) {
         return (

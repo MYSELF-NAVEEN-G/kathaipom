@@ -1,0 +1,71 @@
+|[
+  {
+    "id": "user-1",
+    "name": "NAVEEN.G",
+    "username": "nafadmin",
+    "email": "naveengovindaraj.g@gmail.com",
+    "password": "nafstud",
+    "avatar": {
+      "id": "avatar-1",
+      "description": "User avatar 1",
+      "imageUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8d29tYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTk1MjA2NzV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman portrait"
+    },
+    "bio": "The FOUNDER & CEO of the Kathaipom platform and NAFON studios. Ensuring stories are shared and heard.",
+    "coverImage": {
+      "id": "cover-1",
+      "description": "Abstract blue and pink background",
+      "imageUrl": "https://images.unsplash.com/photo-1557683316-9a7060991636?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzOTY3MDl8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGJhY2tncm91bmR8ZW58MHx8fHwxNjE2MTU4MjY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract background"
+    },
+    "followers": [],
+    "following": [],
+    "isAdmin": true
+  },
+  {
+    "id": "user-2",
+    "name": "Jane Doe",
+    "username": "janedoe",
+    "email": "jane.doe@example.com",
+    "password": "password123",
+    "avatar": {
+      "id": "avatar-2",
+      "description": "User avatar 2",
+      "imageUrl": "https://images.unsplash.com/photo-1560250097-0b93528c311a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTk1ODAxMjN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    },
+    "bio": "Lover of fiction, coffee, and rainy days. Exploring the world one story at a time.",
+    "coverImage": {
+      "id": "cover-2",
+      "description": "Bookshelf in a cozy library",
+      "imageUrl": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzOTY3MDl8MHwxfHNlYXJjaHwxfHxsaWJyYXJ5fGVufDB8fHx8MTYxNjE1ODMxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "library bookshelf"
+    },
+    "followers": [],
+    "following": [],
+    "isAdmin": false
+  },
+  {
+    "id": "user-3",
+    "name": "John Smith",
+    "username": "johnsmith",
+    "email": "john.smith@example.com",
+    "password": "password123",
+    "avatar": {
+      "id": "avatar-3",
+      "description": "User avatar 3",
+      "imageUrl": "https://images.unsplash.com/photo-1607529378676-a20456ee2f6b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwZXJzb24lMjBzbWlsaW5nfGVufDB8fHx8MTc1OTU0MTgzMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person smiling"
+    },
+    "bio": "Documenting my adventures in technology, travel, and gastronomy. Based in NYC.",
+    "coverImage": {
+      "id": "cover-3",
+      "description": "World map on a rustic wooden wall",
+      "imageUrl": "https://images.unsplash.com/photo-1504999335295-e23f1a8c459c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzOTY3MDl8MHwxfHNlYXJjaHwzfHx0cmF2ZWwlMjBtYXB8ZW58MHx8fHwxNjE2MTU4MzQyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "travel map"
+    },
+    "followers": [],
+    "following": [],
+    "isAdmin": false
+  }
+]

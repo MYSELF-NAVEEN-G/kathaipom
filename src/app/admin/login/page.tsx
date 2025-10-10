@@ -15,51 +15,41 @@ import { Logo } from '@/components/logo';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
+import type { User } from '@/lib/types';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
   const { toast } = useToast();
-  const supabase = createClient();
+  const { login } = useAuth();
 
   const handleSignIn = async () => {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: error.message,
+    try {
+       const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, isAdmin: true }),
       });
-    } else if (user) {
-      // In a real app, you would fetch a custom claim or profile to check for admin role.
-      // Supabase user metadata is a good place for this.
-      // For this prototype, we assume the initial 'is_admin' metadata flag works.
-      const { data, error: profileError } = await supabase
-        .from('users')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single();
-        
-      if (profileError || !data || !data.is_admin) {
-        await supabase.auth.signOut();
-        toast({
-          variant: 'destructive',
-          title: 'Permission Denied',
-          description: profileError?.message || 'This account does not have writer privileges.',
-        });
-      } else {
-        router.push('/feed');
-        router.refresh();
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Login failed');
       }
+
+      const user: User = data.user;
+      login(user.id);
+      router.push('/admin/dashboard');
+      router.refresh();
+
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: error.message || "Invalid username or password for a writer account.",
+        });
     }
   };
 
@@ -80,14 +70,14 @@ export default function AdminLoginPage() {
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="writer-username">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="writer@example.com"
+                id="writer-username"
+                type="text"
+                placeholder="writer_username"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div className="grid gap-2">

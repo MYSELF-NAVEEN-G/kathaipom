@@ -15,16 +15,17 @@ import { Logo } from '@/components/logo';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/lib/supabase/client';
+import { addUser } from '@/lib/actions';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function WriterSignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { login } = useAuth();
   const [name, setName] = React.useState('');
   const [username, setUsername] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const supabase = createClient();
 
   const handleSignUp = async () => {
     if (!name || !username || !email || !password) {
@@ -36,33 +37,28 @@ export default function WriterSignupPage() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: name,
-          username: username,
-          is_admin: true, // This marks the user as a writer
-        },
-      },
-    });
+    try {
+        const newUser = await addUser({
+            name,
+            username,
+            email,
+            password,
+            isAdmin: true,
+        });
 
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Sign-up failed',
-        description: error.message,
-      });
-    } else {
-      toast({
-        title: 'Success!',
-        description: 'Please check your email to confirm your account.',
-      });
-      // Supabase handles the session, the auth hook will update.
-      window.dispatchEvent(new Event('login'));
-      router.push('/feed');
-      router.refresh();
+        toast({
+            title: 'Success!',
+            description: 'Your writer account has been created.',
+        });
+        login(newUser.id);
+        router.push('/admin/dashboard');
+        router.refresh();
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Sign-up failed',
+            description: error.message,
+        });
     }
   };
 

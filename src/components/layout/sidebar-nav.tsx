@@ -27,20 +27,21 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import type { User } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, logout, isLoading } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    logout();
     router.push('/');
     router.refresh();
   };
+
+  if (isLoading) {
+    return <p className="p-4">Loading...</p>;
+  }
 
   if (!currentUser) {
     return (

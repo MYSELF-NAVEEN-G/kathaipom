@@ -15,30 +15,41 @@ import { Logo } from '@/components/logo';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
+import type { User } from '@/lib/types';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = React.useState('');
+  const { login } = useAuth();
+  const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const supabase = createClient();
 
   const handleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, isAdmin: false }),
+      });
 
-    if (error) {
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      const user: User = data.user;
+      login(user.id);
+      router.push('/feed');
+      router.refresh();
+      
+    } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
         description: error.message,
       });
-    } else {
-      router.push('/feed');
-      router.refresh(); 
     }
   };
 
@@ -57,14 +68,14 @@ export default function LoginPage() {
         <CardContent>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="me@example.com"
+                id="username"
+                type="text"
+                placeholder="your_username"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div className="grid gap-2">

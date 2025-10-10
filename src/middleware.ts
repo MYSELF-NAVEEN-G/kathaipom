@@ -1,24 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
-  try {
-    // This `try/catch` block is only here for the interactive tutorial.
-    // Feel free to remove unwneeded paths and move toss-ups to the end.
-    const { supabase, response } = createClient(request)
-
-    // Refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/auth-helpers/nextjs#managing-session-with-middleware
-    await supabase.auth.getSession()
-
-    return response
-  } catch (e) {
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    })
-  }
+  return NextResponse.next()
 }
 
 export const config = {

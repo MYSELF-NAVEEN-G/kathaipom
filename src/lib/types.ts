@@ -1,10 +1,12 @@
 import { type ImagePlaceholder } from "./placeholder-images";
 
-// This is the shape of our 'users' table in Supabase
+// This is the shape of our 'users.json' file
 export type User = {
   id: string;
   name: string;
   username: string;
+  email: string;
+  password?: string; // Should be hashed in a real app
   avatar: ImagePlaceholder;
   bio: string;
   coverImage: ImagePlaceholder;
@@ -13,28 +15,28 @@ export type User = {
   isAdmin: boolean;
 };
 
-// This is the shape of our 'comments' table in Supabase
+// This is the shape of comments within 'posts.json'
 export type Comment = {
   id: string;
-  authorId: string; // user_id from Supabase
-  authorName: string; // fetched via join
+  authorId: string; // user.id
+  authorName: string; // denormalized for convenience
   content: string;
-  timestamp: string; // created_at from Supabase
+  timestamp: string;
 };
 
 
-// This is the shape of our 'stories' table in Supabase
+// This is the shape of our 'posts.json' file
 export type Story = {
   id:string;
-  authorId: string; // author_id from Supabase
-  authorName: string; // This will be joined from the users table
-  authorUsername: string; // This will be joined from the users table
+  authorId: string;
+  authorName: string; 
+  authorUsername: string;
   content: string[];
   images?: string[];
   likes: number;
-  likedBy: string[];
+  likedBy: string[]; // array of user.id
   comments: Comment[];
-  timestamp: string; // created_at from Supabase
+  timestamp: string;
 };
 
 

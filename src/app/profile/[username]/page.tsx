@@ -4,7 +4,6 @@ import { AppLayout } from '@/components/layout/app-layout';
 import { ProfileHeader } from '@/components/profile/profile-header';
 import { UserPostFeed } from '@/components/profile/user-post-feed';
 import { LikedPostsFeed } from '@/components/profile/liked-posts-feed';
-import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 
 type ProfilePageProps = {
@@ -38,7 +37,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       <div className="w-full">
         <ProfileHeader user={user} postsCount={stories.length} />
         <div className="p-4 md:p-6">
-            {isOwnProfile && user.isAdmin === false ? (
+            {isOwnProfile && currentUser?.isAdmin === false ? (
                  <LikedPostsFeed stories={likedStories} />
             ) : (
                 <UserPostFeed stories={stories} />
